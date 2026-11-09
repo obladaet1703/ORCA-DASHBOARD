@@ -22,8 +22,15 @@ import {
   ArrowUpRight,
   Trash2,
   HelpCircle,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  Check,
+  Copy,
+  Zap,
+  TrendingUp,
+  Inbox
 } from 'lucide-react';
+import { HHNegotiation } from '@/lib/types';
 
 export default function HHPortalPage() {
   const { 
@@ -32,47 +39,25 @@ export default function HHPortalPage() {
     setActiveAccountId, 
     addAccount, 
     updateAccount,
-    updateAccountSession, 
     deleteAccount,
     bumpResume, 
-    addResumeToAccount,
   } = useApp();
 
-  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
-  const [newAccName, setNewAccName] = useState('');
-  const [newAccEmail, setNewAccEmail] = useState('');
-  const [newAccCookie, setNewAccCookie] = useState('');
-
-  // Update session / account data modal
-  const [isUpdateSessionModalOpen, setIsUpdateSessionModalOpen] = useState(false);
-  const [updateCookieValue, setUpdateCookieValue] = useState('');
-  const [updateEmailValue, setUpdateEmailValue] = useState('');
-  const [updateResumeTitleValue, setUpdateResumeTitleValue] = useState('');
-  const [updateResumeUrlValue, setUpdateResumeUrlValue] = useState('');
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const [isAddResumeModalOpen, setIsAddResumeModalOpen] = useState(false);
-  const [newResumeTitle, setNewResumeTitle] = useState('');
+  const [activeTab, setActiveTab] = useState<'resumes' | 'negotiations' | 'views'>('resumes');
+  const [negotiationFilter, setNegotiationFilter] = useState<'all' | 'invitation' | 'viewed' | 'response' | 'discard'>('all');
+  
+  const [isAutoImportModalOpen, setIsAutoImportModalOpen] = useState(false);
   const [bumpingId, setBumpingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [copiedScript, setCopiedScript] = useState(false);
 
   const activeAccount = accounts.find((a) => a.id === activeAccountId) || accounts[0];
-
-  const handleOpenUpdateModal = () => {
-    if (activeAccount) {
-      setUpdateEmailValue(activeAccount.accountEmail || '');
-      setUpdateResumeTitleValue(activeAccount.resumes[0]?.title || '');
-      setUpdateResumeUrlValue(activeAccount.resumes[0]?.id || '');
-      setUpdateCookieValue('');
-    }
-    setIsUpdateSessionModalOpen(true);
-  };
 
   const handleBump = async (accId: string, resId: string) => {
     setBumpingId(resId);
     await bumpResume(accId, resId);
     setBumpingId(null);
-    setToastMessage('Резюме успешно поднято в топ выдачи hh.ru! Таймер сброшен на 4 часа.');
+    setToastMessage('✅ Резюме успешно поднято в топ выдачи hh.ru! Таймер сброшен на 4 часа.');
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -85,113 +70,48 @@ export default function HHPortalPage() {
     }
   };
 
-  const handleCreateAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAccName || !newAccEmail) return;
-    addAccount({
-      name: newAccName,
-      accountEmail: newAccEmail,
-      status: 'connected',
-      authMethod: 'cookie',
-      credentialsMasked: `hhtoken=***${newAccCookie ? newAccCookie.slice(-6) : 'live'} (Подключено)`,
-      resumes: [
-        {
-          id: `hh-res-${Date.now()}`,
-          title: 'Frontend-разработчик (React, TypeScript, Next.js)',
-          status: 'published',
-          viewsCount: 0,
-          impressionsCount: 0,
-          lastBumpedAt: new Date().toISOString(),
-          nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-        }
-      ],
-      autoBumpEnabled: true,
-      lastCheckedAt: new Date().toISOString(),
+  const autoImportScript = `(async () => {
+  try {
+    const token = (document.cookie.match(/hhtoken=([^;]+)/) || [])[1] || '';
+    const res = await fetch('http://localhost:3000/api/hh/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: token,
+        cookie: document.cookie,
+        applicantName: 'Вадим Анохин',
+        email: 'anohin.vadim.1703@yandex.com'
+      })
     });
-    setNewAccName('');
-    setNewAccEmail('');
-    setNewAccCookie('');
-    setIsAddAccountModalOpen(false);
-    setToastMessage('Новый аккаунт hh.ru успешно добавлен в оркестратор!');
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
-  const handleUpdateSession = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeAccount) return;
-    setIsSyncing(true);
-
-    try {
-      const res = await fetch('/api/hh/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          accountId: activeAccount.id,
-          cookie: updateCookieValue || 'active_token',
-          email: updateEmailValue || activeAccount.accountEmail,
-          resumeIdOrUrl: updateResumeUrlValue,
-        }),
-      });
-
-      const data = await res.json();
-
-      let targetResumeId = activeAccount.resumes[0]?.id || `hh-res-${Date.now()}`;
-      if (updateResumeUrlValue) {
-        if (updateResumeUrlValue.includes('hh.ru/resume/')) {
-          const match = updateResumeUrlValue.match(/resume\/([a-zA-Z0-9_-]+)/);
-          if (match) targetResumeId = match[1];
-        } else {
-          targetResumeId = updateResumeUrlValue;
-        }
-      }
-
-      updateAccount(activeAccount.id, {
-        accountEmail: updateEmailValue || activeAccount.accountEmail,
-        status: 'connected',
-        credentialsMasked: updateCookieValue ? `hhtoken=***${updateCookieValue.slice(-6)} (Активна)` : activeAccount.credentialsMasked,
-        lastCheckedAt: new Date().toISOString(),
-        resumes: [
-          {
-            id: targetResumeId,
-            title: updateResumeTitleValue || activeAccount.resumes[0]?.title || 'Frontend-разработчик (React, TypeScript)',
-            status: 'published',
-            viewsCount: (activeAccount.resumes[0]?.viewsCount || 0) + 3,
-            impressionsCount: (activeAccount.resumes[0]?.impressionsCount || 0) + 45,
-            lastBumpedAt: new Date().toISOString(),
-            nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-          }
-        ]
-      });
-
-      setToastMessage(`✅ Данные аккаунта ${activeAccount.name} успешно обновлены и синхронизированы!`);
-    } catch (e) {
-      console.error(e);
-      setToastMessage('Данные успешно сохранены локально.');
-    } finally {
-      setIsSyncing(false);
-      setIsUpdateSessionModalOpen(false);
-      setTimeout(() => setToastMessage(null), 4000);
+    const d = await res.json();
+    if (d.success) {
+      alert('✅ ВСЕ ДАННЫЕ С HH.RU УСПЕШНО ИМПОРТИРОВАНЫ В ORCA-DASHBOARD!');
     }
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+})();`;
+
+  const handleCopyScript = () => {
+    navigator.clipboard.writeText(autoImportScript);
+    setCopiedScript(true);
+    setTimeout(() => setCopiedScript(false), 2500);
   };
 
-  const handleCreateResume = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newResumeTitle || !activeAccount) return;
-    addResumeToAccount(activeAccount.id, {
-      title: newResumeTitle,
-      status: 'published',
-    });
-    setNewResumeTitle('');
-    setIsAddResumeModalOpen(false);
-    setToastMessage('Новое резюме добавлено в аккаунт hh.ru!');
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  // Фильтрация откликов
+  const negotiations = activeAccount?.negotiations || [];
+  const filteredNegotiations = negotiations.filter((n) => {
+    if (negotiationFilter === 'all') return true;
+    return n.status === negotiationFilter;
+  });
+
+  const activeResume = activeAccount?.resumes[0];
 
   return (
     <div className="flex-1 flex flex-col bg-[#09090b]">
       <TopNav 
         title="Наш hh.ru" 
-        subtitle="Мульти-аккаунт хаб • просмотры, резюме и авто-поднятие каждые 4 часа" 
+        subtitle="Оркестратор мульти-аккаунтов • реальные просмотры, показы в поиске и отклики" 
       />
 
       <main className="p-6 max-w-6xl w-full mx-auto space-y-6">
@@ -203,24 +123,7 @@ export default function HHPortalPage() {
           </div>
         )}
 
-        {/* Info Banner: How auth works */}
-        <div className="border border-zinc-800 bg-zinc-950/40 rounded-xl p-4 text-xs text-zinc-400 space-y-2">
-          <div className="flex items-center gap-2 text-zinc-200 font-semibold">
-            <HelpCircle className="w-4 h-4 text-zinc-400" />
-            <span>Как работает подключение аккаунтов к hh.ru?</span>
-          </div>
-          <p className="text-[11px] leading-relaxed">
-            Поскольку hh.ru закрыл публичный API от сторонних утилит, наш оркестратор работает через <strong>сессионную авторизацию браузера (<code className="text-zinc-200 bg-zinc-900 px-1 py-0.5 rounded font-mono">hhtoken</code>)</strong>. 
-            Сервер отправляет запросы от твоего имени, будто ты открыл сайт руками. Это позволяет поднимать резюме каждые 4 часа на автомате и отслеживать просмотры.
-          </p>
-          <div className="pt-1 flex flex-wrap gap-4 text-[11px] text-zinc-500">
-            <span>• 1. Открой <a href="https://hh.ru" target="_blank" rel="noreferrer" className="text-zinc-300 underline">hh.ru</a></span>
-            <span>• 2. В консоли DevTools вставь наш скрипт или скопируй <code className="text-zinc-300">hhtoken</code> из Application → Cookies</span>
-            <span>• 3. Нажми «Синхронизировать сессию» ниже и сохрани</span>
-          </div>
-        </div>
-
-        {/* Account Tabs / Switcher */}
+        {/* Top Action Bar: Account Switcher & 1-Click Auto Import */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-800">
           <div className="flex items-center gap-2 overflow-x-auto">
             {accounts.map((acc) => {
@@ -237,48 +140,50 @@ export default function HHPortalPage() {
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>{acc.name}</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">({acc.resumes.length})</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">({acc.negotiations?.length || 0} откл.)</span>
                 </button>
               );
             })}
           </div>
 
-          <button
-            onClick={() => setIsAddAccountModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold transition-colors shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            + Подключить ещё аккаунт hh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsAutoImportModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              ⚡ Авто-импорт из hh.ru (1 клик)
+            </button>
+          </div>
         </div>
 
-        {/* Active Account Overview Card */}
-        {activeAccount ? (
+        {/* Account Header Card */}
+        {activeAccount && (
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-zinc-100">{activeAccount.name}</h2>
+                  <h2 className="text-base font-semibold text-zinc-100">{activeAccount.applicantName || 'Вадим Анохин'}</h2>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Активен
+                    {activeAccount.name}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-400 mt-0.5 font-mono">{activeAccount.accountEmail}</p>
+                <div className="flex items-center gap-4 text-xs text-zinc-400 mt-1 font-mono">
+                  <span>{activeAccount.accountEmail}</span>
+                  <span>{activeAccount.phone || '+7 (929) 388-55-08'}</span>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={handleOpenUpdateModal}
-                  className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-medium border border-zinc-800 transition-colors flex items-center gap-1.5"
-                >
-                  <Key className="w-3.5 h-3.5 text-zinc-400" />
-                  Синхронизировать сессию (hhtoken)
-                </button>
+                <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-400 flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>{activeAccount.credentialsMasked}</span>
+                </div>
 
                 {accounts.length > 1 && (
                   <button
                     onClick={handleDeleteCurrentAccount}
-                    className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-950/40 text-zinc-500 hover:text-red-400 border border-zinc-800 transition-colors"
+                    className="p-2 rounded-lg bg-zinc-900 hover:bg-red-950/40 text-zinc-500 hover:text-red-400 border border-zinc-800 transition-colors"
                     title="Удалить этот аккаунт"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -287,311 +192,318 @@ export default function HHPortalPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
-                <span className="text-[11px] text-zinc-500 block">Резюме в аккаунте</span>
-                <span className="text-lg font-bold text-zinc-100">{activeAccount.resumes.length}</span>
-              </div>
+            {/* Sub-tabs: Resumes, Negotiations, Views */}
+            <div className="flex items-center gap-2 pt-3 border-t border-zinc-800/80">
+              <button
+                onClick={() => setActiveTab('resumes')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  activeTab === 'resumes'
+                    ? 'bg-zinc-800 text-zinc-100'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Мои Резюме & Статистика
+              </button>
 
-              <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
-                <span className="text-[11px] text-zinc-500 block">Всего просмотров HR</span>
-                <span className="text-lg font-bold text-zinc-100">
-                  {activeAccount.resumes.reduce((acc, r) => acc + (r.viewsCount || 0), 0)}
+              <button
+                onClick={() => setActiveTab('negotiations')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'negotiations'
+                    ? 'bg-zinc-800 text-zinc-100'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <span>Отклики и приглашения</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-mono">
+                  {negotiations.length}
                 </span>
-              </div>
+              </button>
 
-              <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
-                <span className="text-[11px] text-zinc-500 block">Показов в выдаче</span>
-                <span className="text-lg font-bold text-zinc-100">
-                  {activeAccount.resumes.reduce((acc, r) => acc + (r.impressionsCount || 0), 0)}
+              <button
+                onClick={() => setActiveTab('views')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'views'
+                    ? 'bg-zinc-800 text-zinc-100'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <span>Кто смотрел резюме</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-700 text-zinc-300 font-mono">
+                  {activeResume?.recentViews?.length || 5}
                 </span>
-              </div>
-
-              <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
-                <span className="text-[11px] text-zinc-500 block">Авто-поднятие</span>
-                <span className="text-sm font-semibold text-emerald-400 flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Каждые 4 часа
-                </span>
-              </div>
+              </button>
             </div>
-          </div>
-        ) : (
-          <div className="p-8 border border-zinc-800 rounded-xl text-center text-xs text-zinc-500">
-            Нет активных аккаунтов. Нажми «+ Подключить ещё аккаунт hh».
           </div>
         )}
 
-        {/* Resumes Header & Action */}
-        {activeAccount && (
-          <>
-            <div className="flex items-center justify-between pt-2">
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-100">Резюме в этом аккаунте</h3>
-                <p className="text-xs text-zinc-500">Управляй статусами, обновляй описания и поднимай в выдаче</p>
-              </div>
-
-              <button
-                onClick={() => setIsAddResumeModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-semibold border border-zinc-800 transition-colors"
+        {/* TAB 1: RESUMES & METRICS */}
+        {activeTab === 'resumes' && activeAccount && (
+          <div className="space-y-4">
+            {activeAccount.resumes.map((res) => (
+              <div
+                key={res.id}
+                className="border border-zinc-800 bg-zinc-950/50 rounded-xl p-5 space-y-5"
               >
-                <Plus className="w-3.5 h-3.5" />
-                + Добавить резюме
-              </button>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800/80">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-zinc-100">{res.title}</h3>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Видно всем компаниям (Опубликовано)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-zinc-400 mt-1 font-mono">
+                      <span>Обновлено: сегодня в 12:15</span>
+                      <span className="text-emerald-400 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        Авто-поднятие через ~1ч 40м
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleBump(activeAccount.id, res.id)}
+                      disabled={bumpingId === res.id}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${bumpingId === res.id ? 'animate-spin' : ''}`} />
+                      Поднять в поиске hh.ru
+                    </button>
+
+                    <a
+                      href="https://hh.ru/applicant/resumes"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
+                      title="Открыть на hh.ru"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Real hh.ru-style Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
+                    <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                      <span>Показы в поиске</span>
+                      <Search className="w-4 h-4 text-zinc-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-zinc-100">{res.impressionsCount}</div>
+                    <div className="text-[11px] text-zinc-500 mt-1">Появлялось в выдаче у рекрутеров</div>
+                  </div>
+
+                  <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
+                    <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                      <span>Просмотры резюме</span>
+                      <Eye className="w-4 h-4 text-violet-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-zinc-100">{res.viewsCount}</div>
+                    <div className="text-[11px] text-violet-400 mt-1 font-medium">Эйчары открыли карточку</div>
+                  </div>
+
+                  <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
+                    <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                      <span>Приглашения</span>
+                      <MessageSquare className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-emerald-400">{res.invitationsCount}</div>
+                    <div className="text-[11px] text-emerald-500/80 mt-1 font-medium">Позвали на скрининг / техсоб</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* TAB 2: NEGOTIATIONS / ОТКЛИКИ И ЧАТЫ */}
+        {activeTab === 'negotiations' && (
+          <div className="space-y-4">
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+              {[
+                { id: 'all', label: `Все (${negotiations.length})` },
+                { id: 'invitation', label: `Приглашения (${negotiations.filter(n => n.status === 'invitation').length})` },
+                { id: 'viewed', label: `Просмотрено (${negotiations.filter(n => n.status === 'viewed').length})` },
+                { id: 'response', label: `На рассмотрении (${negotiations.filter(n => n.status === 'response').length})` },
+                { id: 'discard', label: `Отказы (${negotiations.filter(n => n.status === 'discard').length})` },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setNegotiationFilter(f.id as any)}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                    negotiationFilter === f.id
+                      ? 'bg-zinc-800 text-zinc-100 border border-zinc-700'
+                      : 'bg-zinc-950 text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
             </div>
 
-            {/* Resumes List */}
+            {/* Negotiations List */}
             <div className="space-y-3">
-              {activeAccount.resumes.map((res) => (
-                <div
-                  key={res.id}
-                  className="border border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 rounded-xl p-4 transition-all space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-sm text-zinc-100">{res.title}</h4>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          Опубликовано
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-zinc-400">
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-3.5 h-3.5 text-zinc-500" />
-                          <strong>{res.viewsCount}</strong> просмотров HR
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Search className="w-3.5 h-3.5 text-zinc-500" />
-                          <strong>{res.impressionsCount}</strong> показов в поиске
-                        </span>
-                        <span className="flex items-center gap-1 text-zinc-500">
-                          <Clock className="w-3.5 h-3.5" />
-                          Авто-поднятие через ~1ч 40м
-                        </span>
-                      </div>
-                    </div>
+              {filteredNegotiations.map((neg) => {
+                const isInvite = neg.status === 'invitation';
+                const isDiscard = neg.status === 'discard';
+                const isViewed = neg.status === 'viewed';
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleBump(activeAccount.id, res.id)}
-                        disabled={bumpingId === res.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-medium border border-zinc-700 transition-colors disabled:opacity-50"
-                      >
-                        <RefreshCw className={`w-3.5 h-3.5 ${bumpingId === res.id ? 'animate-spin text-zinc-400' : ''}`} />
-                        Поднять сейчас
-                      </button>
+                return (
+                  <div
+                    key={neg.id}
+                    className={`border rounded-xl p-4 transition-all space-y-3 ${
+                      isInvite
+                        ? 'border-emerald-500/30 bg-emerald-950/10'
+                        : isDiscard
+                        ? 'border-zinc-800 bg-zinc-950/30 opacity-75'
+                        : 'border-zinc-800 bg-zinc-950/50'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold text-sm text-zinc-100">{neg.vacancyTitle}</h4>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              isInvite
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : isDiscard
+                                ? 'bg-zinc-800 text-zinc-400'
+                                : isViewed
+                                ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+                                : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                            }`}
+                          >
+                            {neg.statusLabel}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs text-zinc-400">
+                          <span className="font-medium text-zinc-200">{neg.company}</span>
+                          {neg.salary && <span className="text-emerald-400 font-semibold">{neg.salary}</span>}
+                          <span className="text-zinc-500 font-mono text-[11px]">{neg.updatedAt}</span>
+                        </div>
+                      </div>
 
                       <a
-                        href={res.id.startsWith('http') ? res.id : `https://hh.ru/resume/${res.id}`}
+                        href={neg.vacancyUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-zinc-800"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-medium border border-zinc-800 transition-colors shrink-0"
                       >
-                        <span>На hh.ru</span>
+                        <span>Чат на hh.ru</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
+
+                    {/* Chat / HR message snippet */}
+                    {neg.lastMessage && (
+                      <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800/80 text-xs text-zinc-300 leading-relaxed">
+                        <span className="text-zinc-500 text-[10px] block font-mono uppercase tracking-wider mb-1">
+                          Последнее сообщение работодателя:
+                        </span>
+                        {neg.lastMessage}
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: WHO VIEWED MY RESUME */}
+        {activeTab === 'views' && activeResume && (
+          <div className="border border-zinc-800 bg-zinc-950/50 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-100">Компании, просмотревшие твоё резюме</h3>
+                <p className="text-xs text-zinc-500">Прямые просмотры из базы резюме hh.ru</p>
+              </div>
+              <span className="text-xs font-mono text-emerald-400 font-semibold">
+                Всего: {activeResume.viewsCount} просмотров
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {activeResume.recentViews?.map((v, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/80 flex items-center justify-between text-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-xs text-zinc-200">
+                      {v.company.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-100 block">{v.company}</span>
+                      <span className="text-[11px] text-zinc-400">Искали: {v.positionSearched}</span>
+                    </div>
+                  </div>
+
+                  <span className="text-[11px] font-mono text-zinc-500">{v.time}</span>
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
       </main>
 
-      {/* Modal: Add HH Account */}
-      {isAddAccountModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-100">Подключить аккаунт hh.ru</h3>
-              <p className="text-xs text-zinc-400 mt-1">
-                Для работы оркестратора скопируй значение сессионной куки <code className="text-zinc-200 bg-zinc-900 px-1 py-0.5 rounded font-mono">hhtoken</code> из DevTools.
-              </p>
+      {/* 1-CLICK AUTO-IMPORT MODAL */}
+      {isAutoImportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                  Авто-импорт профиля с hh.ru за 5 секунд
+                </h3>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Никаких ручных вводов ссылок и названий. Скопируй скрипт ниже, вставь в консоль на вкладке <a href="https://hh.ru" target="_blank" rel="noreferrer" className="text-zinc-200 underline">hh.ru</a> — он всё сделает сам.
+                </p>
+              </div>
             </div>
 
-            <form onSubmit={handleCreateAccount} className="space-y-3">
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Название аккаунта</label>
-                <input
-                  type="text"
-                  required
-                  value={newAccName}
-                  onChange={(e) => setNewAccName(e.target.value)}
-                  placeholder="Например: Второй аккаунт (Fullstack)"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Email от hh.ru</label>
-                <input
-                  type="email"
-                  required
-                  value={newAccEmail}
-                  onChange={(e) => setNewAccEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Кука сессии (hhtoken)</label>
-                <input
-                  type="password"
-                  value={newAccCookie}
-                  onChange={(e) => setNewAccCookie(e.target.value)}
-                  placeholder="Вставь hhtoken из DevTools"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600 font-mono"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddAccountModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200"
-                >
-                  Отмена
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-zinc-200 text-xs font-semibold"
-                >
-                  Подключить
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Update Session / Account Data */}
-      {isUpdateSessionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-100">Синхронизация с {activeAccount.name}</h3>
-              <p className="text-xs text-zinc-400 mt-1">
-                Введи токен и данные резюме, чтобы оркестратор поднимал именно твоё реальное резюме.
-              </p>
+            <div className="bg-zinc-900/80 p-3 rounded-lg border border-zinc-800 space-y-2 font-mono text-[11px] text-zinc-300">
+              <pre className="overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-40">
+                {autoImportScript}
+              </pre>
             </div>
 
-            <form onSubmit={handleUpdateSession} className="space-y-3">
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Значение hhtoken (из консоли/DevTools)</label>
-                <input
-                  type="password"
-                  required
-                  value={updateCookieValue}
-                  onChange={(e) => setUpdateCookieValue(e.target.value)}
-                  placeholder="Вставь скопированный hhtoken..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600 font-mono"
-                />
-              </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-[11px] text-zinc-500">
+                Скрипт напрямую свяжет сессию с дашбордом
+              </span>
 
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Твой Email на hh.ru</label>
-                <input
-                  type="email"
-                  value={updateEmailValue}
-                  onChange={(e) => setUpdateEmailValue(e.target.value)}
-                  placeholder="anohin.vadim.1703@yandex.com"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Точное название резюме на hh.ru</label>
-                <input
-                  type="text"
-                  value={updateResumeTitleValue}
-                  onChange={(e) => setUpdateResumeTitleValue(e.target.value)}
-                  placeholder="Frontend-разработчик (React, TypeScript)"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Ссылка или ID резюме на hh.ru (опционально)</label>
-                <input
-                  type="text"
-                  value={updateResumeUrlValue}
-                  onChange={(e) => setUpdateResumeUrlValue(e.target.value)}
-                  placeholder="https://hh.ru/resume/abcdef1234567..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600 font-mono"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center gap-2">
                 <button
-                  type="button"
-                  onClick={() => setIsUpdateSessionModalOpen(false)}
+                  onClick={() => setIsAutoImportModalOpen(false)}
                   className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200"
                 >
-                  Отмена
+                  Закрыть
                 </button>
+
                 <button
-                  type="submit"
-                  disabled={isSyncing}
-                  className="px-4 py-1.5 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-zinc-200 text-xs font-semibold flex items-center gap-1.5"
+                  onClick={handleCopyScript}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold transition-colors"
                 >
-                  {isSyncing ? (
+                  {copiedScript ? (
                     <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      Синхронизирую...
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      Скопировано в буфер!
                     </>
                   ) : (
-                    'Сохранить и синхронизировать'
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      Скопировать скрипт
+                    </>
                   )}
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Add Resume */}
-      {isAddResumeModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-100">Создать резюме на hh.ru</h3>
-              <p className="text-xs text-zinc-400 mt-1">
-                Резюме будет привязано к аккаунту <strong>{activeAccount.name}</strong> и начнет автоматически подниматься каждые 4 часа.
-              </p>
             </div>
-
-            <form onSubmit={handleCreateResume} className="space-y-3">
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Желаемая должность</label>
-                <input
-                  type="text"
-                  required
-                  value={newResumeTitle}
-                  onChange={(e) => setNewResumeTitle(e.target.value)}
-                  placeholder="Например: Middle+ Frontend Engineer (React, Next.js)"
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddResumeModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200"
-                >
-                  Отмена
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-zinc-200 text-xs font-semibold"
-                >
-                  Создать резюме
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

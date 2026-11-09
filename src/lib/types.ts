@@ -32,7 +32,7 @@ export interface Vacancy {
   appliedWithResumeId?: string;
   appliedDate?: string;
   notes?: string;
-  accountUsed?: string; // e.g. "Аккаунт 1 (Фронт)"
+  accountUsed?: string;
 }
 
 export interface ResumeProfile {
@@ -53,22 +53,49 @@ export interface ResumeProfile {
   active: boolean;
 }
 
+export interface HHNegotiation {
+  id: string;
+  vacancyTitle: string;
+  vacancyUrl: string;
+  company: string;
+  salary?: string;
+  status: 'invitation' | 'discard' | 'response' | 'viewed';
+  statusLabel: string;
+  updatedAt: string;
+  hasUnreadMessages?: boolean;
+  lastMessage?: string;
+  chatUrl?: string;
+}
+
+export interface HHResumeView {
+  company: string;
+  time: string;
+  positionSearched?: string;
+}
+
 export interface HHAccount {
   id: string;
   name: string;
+  applicantName?: string;
   accountEmail: string;
+  phone?: string;
   status: 'connected' | 'needs_auth' | 'error';
   authMethod: 'cookie' | 'oauth_token';
   credentialsMasked: string;
+  cookieRaw?: string;
   resumes: {
     id: string;
     title: string;
+    url?: string;
     lastBumpedAt?: string;
     nextBumpAvailableAt?: string;
     status: 'published' | 'hidden';
     viewsCount?: number;
     impressionsCount?: number;
+    invitationsCount?: number;
+    recentViews?: HHResumeView[];
   }[];
+  negotiations: HHNegotiation[]; // Отклики и переписки
   autoBumpEnabled: boolean;
   lastCheckedAt?: string;
 }
@@ -76,7 +103,7 @@ export interface HHAccount {
 export interface TelegramChannelConfig {
   id: string;
   name: string;
-  username: string; // e.g. "forwebdev"
+  username: string;
   description: string;
   enabled: boolean;
   category: 'frontend' | 'fullstack' | 'all';
