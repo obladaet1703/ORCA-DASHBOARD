@@ -34,6 +34,7 @@ interface AppContextType {
   activeAccountId: string;
   setActiveAccountId: (id: string) => void;
   addAccount: (account: Omit<HHAccount, 'id'>) => void;
+  updateAccount: (accountId: string, data: Partial<HHAccount>) => void;
   updateAccountSession: (accountId: string, cookies: string) => void;
   deleteAccount: (accountId: string) => void;
   bumpResume: (accountId: string, resumeId: string) => Promise<boolean>;
@@ -107,6 +108,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addAccount = (acc: Omit<HHAccount, 'id'>) => {
     const id = `hh-acc-${Date.now()}`;
     const updated = [...accounts, { ...acc, id }];
+    saveAccounts(updated);
+  };
+
+  const updateAccount = (accountId: string, data: Partial<HHAccount>) => {
+    const updated = accounts.map((acc) => (acc.id === accountId ? { ...acc, ...data } : acc));
     saveAccounts(updated);
   };
 
@@ -220,6 +226,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         activeAccountId,
         setActiveAccountId,
         addAccount,
+        updateAccount,
         updateAccountSession,
         deleteAccount,
         bumpResume,
