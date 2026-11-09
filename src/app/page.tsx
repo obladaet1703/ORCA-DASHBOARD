@@ -1,69 +1,171 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Header } from '@/components/Header';
+import { FunnelDashboard } from '@/components/FunnelDashboard';
+import { VacancyFeed } from '@/components/VacancyFeed';
+import { KanbanBoard } from '@/components/KanbanBoard';
+import { ResumePersonaManager } from '@/components/ResumePersonaManager';
+import { AccountsManager } from '@/components/AccountsManager';
+import { AICoverLetterModal } from '@/components/AICoverLetterModal';
+import { 
+  INITIAL_HH_ACCOUNTS, 
+  INITIAL_KANBAN_VACANCIES 
+} from '@/lib/mock-data';
+import { Vacancy, ApplicationStatus, HHAccount } from '@/lib/types';
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activePersona, setActivePersona] = useState<'frontend' | 'fullstack'>('frontend');
+  const [accounts, setAccounts] = useState<HHAccount[]>(INITIAL_HH_ACCOUNTS);
+  const [kanbanVacancies, setKanbanVacancies] = useState<Vacancy[]>(INITIAL_KANBAN_VACANCIES);
+  const [isBumping, setIsBumping] = useState(false);
+  const [selectedVacancyForAI, setSelectedVacancyForAI] = useState<Vacancy | null>(null);
+
+  // Сохранение и восстановление из localStorage
+  useEffect(() => {
+    const savedKanban = localStorage.getItem('job_hunt_kanban');
+    if (savedKanban) {
+      try {
+        setKanbanVacancies(JSON.parse(savedKanban));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const saveKanban = (updated: Vacancy[]) => {
+    setKanbanVacancies(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('job_hunt_kanban', JSON.stringify(updated));
+    }
+  };
+
+  // Добавление вакансии в Канбан
+  const handleAddToKanban = (vacancy: Vacancy) => {
+    const newEntry: Vacancy = {
+      ...vacancy,
+      status: 'applied',
+      appliedWithResumeId: activePersona === 'frontend' ? 'res-frontend' : 'res-fullstack',
+      appliedDate: new Date().toISOString().split('T')[0],
+      accountUsed: activePersona === 'frontend' ? 'Аккаунт №1 (Frontend)' : 'Аккаунт №2 (Fullstack)',
+    };
+    const updated = [newEntry, ...kanbanVacancies.filter((v) => v.id !== vacancy.id)];
+    saveKanban(updated);
+  };
+
+  // Обновление статуса в Канбане
+  const handleUpdateStatus = (id: string, newStatus: ApplicationStatus) => {
+    const updated = kanbanVacancies.map((v) => 
+      v.id === id ? { ...v, status: newStatus } : v
+    );
+    saveKanban(updated);
+  };
+
+  // Обновление заметки
+  const handleUpdateNotes = (id: string, notes: string) => {
+    const updated = kanbanVacancies.map((v) => 
+      v.id === id ? { ...v, notes } : v
+    );
+    saveKanban(updated);
+  };
+
+  // Удаление из Канбана
+  const handleDeleteKanban = (id: string) => {
+    const updated = kanbanVacancies.filter((v) => v.id !== id);
+    saveKanban(updated);
+  };
+
+  // Поднятие всех резюме
+  const handleBumpAll = async () => {
+    setIsBumping(true);
+    try {
+      for (const acc of accounts) {
+        for (const res of acc.resumes) {
+          await fetch('/api/hh/bump', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              accountId: acc.id,
+              resumeId: res.id,
+            }),
+          });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsBumping(false);
+    }
+  };
+
+  // Поднятие конкретного резюме
+  const handleBumpAccount = async (accountId: string, resumeId: string) => {
+    try {
+      await fetch('/api/hh/bump', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountId,
+          resumeId,
+        }),
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-violet-600 selection:text-white">
+      {/* Global Header */}
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        activePersona={activePersona}
+        setActivePersona={setActivePersona}
+        accounts={accounts}
+        onBumpAll={handleBumpAll}
+        isBumping={isBumping}
+      />
+
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'dashboard' && <FunnelDashboard />}
+
+        {activeTab === 'vacancies' && (
+          <VacancyFeed
+            onAddToKanban={handleAddToKanban}
+            activePersona={activePersona}
+          />
+        )}
+
+        {activeTab === 'kanban' && (
+          <KanbanBoard
+            vacancies={kanbanVacancies}
+            onUpdateStatus={handleUpdateStatus}
+            onUpdateNotes={handleUpdateNotes}
+            onDelete={handleDeleteKanban}
+            onOpenAI={(v) => setSelectedVacancyForAI(v)}
+          />
+        )}
+
+        {activeTab === 'resumes' && <ResumePersonaManager />}
+
+        {activeTab === 'accounts' && (
+          <AccountsManager
+            accounts={accounts}
+            onBumpAccount={handleBumpAccount}
+          />
+        )}
       </main>
+
+      {/* Global AI Modal if opened from Kanban */}
+      <AICoverLetterModal
+        isOpen={!!selectedVacancyForAI}
+        onClose={() => setSelectedVacancyForAI(null)}
+        vacancy={selectedVacancyForAI}
+        activeProfileType={activePersona}
+      />
     </div>
   );
 }
