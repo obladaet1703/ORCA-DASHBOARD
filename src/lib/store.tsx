@@ -7,7 +7,7 @@ import { INITIAL_RESUME_PROFILES, INITIAL_HH_ACCOUNTS, INITIAL_KANBAN_VACANCIES 
 export interface TelegramChannelItem {
   id: string;
   name: string;
-  username: string; // handle or invite hash
+  username: string;
   isPrivate?: boolean;
   inviteLink?: string;
   category: string;
@@ -39,6 +39,7 @@ interface AppContextType {
   deleteAccount: (accountId: string) => void;
   bumpResume: (accountId: string, resumeId: string) => Promise<boolean>;
   addResumeToAccount: (accountId: string, resume: { title: string; status: 'published' | 'hidden' }) => void;
+  updateAccountStats: (accountId: string, stats: { viewsCount: number; impressionsCount: number; invitationsCount: number }) => void;
 
   // Telegram channels
   channels: TelegramChannelItem[];
@@ -59,14 +60,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [channels] = useState<TelegramChannelItem[]>(USER_TELEGRAM_CHANNELS);
   const [applications, setApplications] = useState<Vacancy[]>(INITIAL_KANBAN_VACANCIES);
 
-  // Persistence
+  // Persistence with robust schema migration
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
     const savedResumes = localStorage.getItem('orca_resumes');
     if (savedResumes) try { setResumes(JSON.parse(savedResumes)); } catch (e) {}
 
     const savedAccounts = localStorage.getItem('orca_accounts');
-    if (savedAccounts) try { setAccounts(JSON.parse(savedAccounts)); } catch (e) {}
+    if (savedAccounts) {
+      try {
+        const parsed: any[] = JSON.parse(savedAccounts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Миграция: если у сохраненных аккаунтов нет negotiations или recentViews, восстанавливаем их из эталона!
+          const merged = parsed.map((acc, idx) => {
+            const fallback = INITIAL_HH_ACCOUNTS[idx] || INITIAL_HH_ACCOUNTS[0];
+            const accResumes = (acc.resumes && acc.resumes.length > 0) ? acc.resumes : fallback.resumes;
+
+            return {
+              ...fallback,
+              ...acc,
+              negotiations: (acc.negotiations && acc.negotiations.length > 0)
+                ? acc.negotiations
+                : fallback.negotiations,
+              resumes: accResumes.map((r: any, rIdx: number) => {
+                const fallbackResume = fallback.resumes[rIdx] || fallback.resumes[0];
+                return {
+                  ...fallbackResume,
+                  ...r,
+                  recentViews: (r.recentViews && r.recentViews.length > 0)
+                    ? r.recentViews
+                    : fallbackResume.recentViews,
+                };
+              }),
+            };
+          });
+          setAccounts(merged);
+        } else {
+          setAccounts(INITIAL_HH_ACCOUNTS);
+        }
+      } catch (e) {
+        setAccounts(INITIAL_HH_ACCOUNTS);
+      }
+    }
 
     const savedApps = localStorage.getItem('orca_applications');
     if (savedApps) try { setApplications(JSON.parse(savedApps)); } catch (e) {}
@@ -139,6 +175,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     saveAccounts(updated);
   };
 
+  const updateAccountStats = (accountId: string, stats: { viewsCount: number; impressionsCount: number; invitationsCount: number }) => {
+    const updated = accounts.map((acc) => {
+      if (acc.id === accountId) {
+        return {
+          ...acc,
+          resumes: acc.resumes.map((r, idx) => {
+            if (idx === 0) {
+              return {
+                ...r,
+                viewsCount: stats.viewsCount,
+                impressionsCount: stats.impressionsCount,
+                invitationsCount: stats.invitationsCount,
+              };
+            }
+            return r;
+          }),
+        };
+      }
+      return acc;
+    });
+    saveAccounts(updated);
+  };
+
   const bumpResume = async (accountId: string, resumeId: string): Promise<boolean> => {
     try {
       await fetch('/api/hh/bump', {
@@ -158,6 +217,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   lastBumpedAt: new Date().toISOString(),
                   nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
                   viewsCount: (r.viewsCount || 0) + 1,
+                  impressionsCount: (r.impressionsCount || 0) + 8,
                 };
               }
               return r;
@@ -188,8 +248,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               status: newResume.status,
               viewsCount: 0,
               impressionsCount: 0,
+              invitationsCount: 0,
               lastBumpedAt: new Date().toISOString(),
               nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+              recentViews: [],
             },
           ],
         };
@@ -231,6 +293,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteAccount,
         bumpResume,
         addResumeToAccount,
+        updateAccountStats,
         channels,
         applications,
         addApplication,
