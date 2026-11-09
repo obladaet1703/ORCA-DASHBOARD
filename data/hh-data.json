@@ -7,7 +7,7 @@
   "status": "connected",
   "authMethod": "cookie",
   "credentialsMasked": "hhtoken=***live (Сессия активна)",
-  "cookieRaw": "hhtoken=live",
+  "cookieRaw": "hhuid=iZ!eFGqQP!ZzuWi8OyswjQ--; _ym_uid=175716628926140369; tmr_lvid=a62f5129691dbaee111e460336187171; tmr_lvidTS=1757166291128; region_clarified=NOT_SET; _ym_d=1791126142; iap.uid=7e0a93c137a64f95804488421f4c28d7; cookie_policy_agreement=true; uxs_uid=ab3e2f10-8b27-11f0-b626-3f7739ab0022; filters191543774={\"showFilters\":false,\"employerStates\":[],\"vacancyIds\":[],\"filterUnread\":false,\"filterHasTextMessage\":false}; baseline_support_reported=1; _xsrf=fc2bba19161bcca8c8226d5698bc41e4; hhrole=applicant; display=desktop; crypted_hhuid=A3A3034F340F82A06403B783FF5605AB036CBCAFB1B4DCCAFB20E383D77500EC; crypted_id=792A98EACDBC99B9F3A847D1A93EF737A5471C6F722104504734B32F0D03E9F8; _hi=191543774; GMT=7; TZ=Asia%2FNovosibirsk; HOSTILE_ON=0; domain_sid=90tQRlH7Fu8zyNSra7jTh%3A1794143626989; entrypoint_career_platform_closed_chat_list=true; mdd=1; regions=4; __ddg9_=212.15.62.146; _ym_isad=1; entrypoint_career_platform_closed_chat_list=true; __zzatgib-w-hh=MDA0dC0jViV+FmELHw4/aQsbSl1pCENQGC9LXy8qOyJTG3xaKEheCjQsGUQxcFZVDA0VRkVuL1xBaiZmOVURCxIXRF5cVWl1FRpLSiVueCplJS0xViR8SylEXFZ9JxsVf3QmTwgTVy8NPjteLW8PJwsSWAkhCklpC15zXV8WPkQhbAs4LBtFOA8teB1keEdXayUaRDFrKFU6EFtzR3FzXT5sJGdJW1RGVwkIJR1DeHEjVwoMW0FzKnwbN1ddHBEkWA4hPwsXXFU+NVQOPHVXLw0uOF4tbx5mUF0hRVlVCigZEn1nFRtQSxgvS18zWn4lDzRDS1sKFA4/VFFCQisVWVJ1KW59OjAbRVceaEheI0ZcVH0XFXs/KGUaQE4nL0tfPm16L04efEsbNSEOPloLG3hyLFMJDV9FSnBzKkJhDysYIVQ1Xz9BYUpKPTdYH0t1MBI=B0/gxA==; __zzatgib-w-hh=MDA0dC0jViV+FmELHw4/aQsbSl1pCENQGC9LXy8qOyJTG3xaKEheCjQsGUQxcFZVDA0VRkVuL1xBaiZmOVURCxIXRF5cVWl1FRpLSiVueCplJS0xViR8SylEXFZ9JxsVf3QmTwgTVy8NPjteLW8PJwsSWAkhCklpC15zXV8WPkQhbAs4LBtFOA8teB1keEdXayUaRDFrKFU6EFtzR3FzXT5sJGdJW1RGVwkIJR1DeHEjVwoMW0FzKnwbN1ddHBEkWA4hPwsXXFU+NVQOPHVXLw0uOF4tbx5mUF0hRVlVCigZEn1nFRtQSxgvS18zWn4lDzRDS1sKFA4/VFFCQisVWVJ1KW59OjAbRVceaEheI0ZcVH0XFXs/KGUaQE4nL0tfPm16L04efEsbNSEOPloLG3hyLFMJDV9FSnBzKkJhDysYIVQ1Xz9BYUpKPTdYH0t1MBI=B0/gxA==; tmr_detect=0%7C1794224894720; device_magritte_breakpoint=m; device_breakpoint=m; device_breakpoint=m; device_magritte_breakpoint=m; __ddg10_=1794226122; cfidsgib-w-hh=DnFHzABLQ/HTVB0RWMZlljN1MI7+0l/vXqNkWAIrW4xGSTTOpjETwfTnGxIE2VHK87m4yiyjF6PAjCfgNUS23ragx5p8j4T8Iw/yHKUk8ndKG1T6v+HchoJgFwq1cpRR8oxEvM5Kcj2ySfcBDVpZ26sFclfN+7h+F/gNQvEf; cfidsgib-w-hh=DnFHzABLQ/HTVB0RWMZlljN1MI7+0l/vXqNkWAIrW4xGSTTOpjETwfTnGxIE2VHK87m4yiyjF6PAjCfgNUS23ragx5p8j4T8Iw/yHKUk8ndKG1T6v+HchoJgFwq1cpRR8oxEvM5Kcj2ySfcBDVpZ26sFclfN+7h+F/gNQvEf; cfidsgib-w-hh=DnFHzABLQ/HTVB0RWMZlljN1MI7+0l/vXqNkWAIrW4xGSTTOpjETwfTnGxIE2VHK87m4yiyjF6PAjCfgNUS23ragx5p8j4T8Iw/yHKUk8ndKG1T6v+HchoJgFwq1cpRR8oxEvM5Kcj2ySfcBDVpZ26sFclfN+7h+F/gNQvEf; gsscgib-w-hh=mUghEAuULSo+D8psu0/4R2Vb4BDr11v+CJoz+5gglpBS9WefgFWJvCAUlFrYa97k+Xx1m6J3k/p7A44wxe4MH6OUxZSLvrXVP2Lw67NiMJ5SRr1D956B8DX3+6WbRklP6kunm/Ts4lgaDqsXeNLrT8G8p9/tNJhGOXujdJ0O9Wi6iT0mTPPXbDSqgnL1bBVANxFgmON07ZN0gmxu9RSyGmbYynn6mfKNhgL6dQ0sFpOhiBfxuYYM3V3pxjcAsifGqu4A7rCO; gsscgib-w-hh=mUghEAuULSo+D8psu0/4R2Vb4BDr11v+CJoz+5gglpBS9WefgFWJvCAUlFrYa97k+Xx1m6J3k/p7A44wxe4MH6OUxZSLvrXVP2Lw67NiMJ5SRr1D956B8DX3+6WbRklP6kunm/Ts4lgaDqsXeNLrT8G8p9/tNJhGOXujdJ0O9Wi6iT0mTPPXbDSqgnL1bBVANxFgmON07ZN0gmxu9RSyGmbYynn6mfKNhgL6dQ0sFpOhiBfxuYYM3V3pxjcAsifGqu4A7rCO; fgsscgib-w-hh=6EWq1cde479ef53c0f69c4566afb3ab9fc36fb16; fgsscgib-w-hh=6EWq1cde479ef53c0f69c4566afb3ab9fc36fb16; __ddg8_=QiuUx7yBkuRJ8EEx",
   "statsBreakdown": {
     "all": 101,
     "interview": 4,
@@ -22,19 +22,725 @@
       "url": "https://novosibirsk.hh.ru/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370",
       "title": "Frontend-разработчик (React, JavaScript, TypeScript, Next.js)",
       "status": "published",
-      "appliedCount": 101,
-      "interviewCount": 4,
-      "waitingCount": 73,
-      "discardCount": 24,
+      "appliedCount": 26,
       "viewsCount": 21,
       "impressionsCount": 43,
-      "invitationsCount": 4,
-      "lastBumpedAt": "2026-11-09T17:50:00.000Z",
-      "nextBumpAvailableAt": "2026-11-09T21:56:00.000Z",
-      "recentViews": []
+      "invitationsCount": 0,
+      "lastBumpedAt": "2026-11-09T12:08:43.281Z",
+      "nextBumpAvailableAt": "2026-11-09T16:08:43.281Z",
+      "recentViews": [
+        {
+          "company": "Siberian Wellness,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Lamoda Tech,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ЭДС,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Сайдкик,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Имплемент,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Яндекс,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Vlex AI,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "СБЕР,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Операционное совершенство,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ФГБУ ЦСП ФМБА России,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Группа компаний Экзон,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Employcity,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "СИНЕРГИЯ,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ТРТ,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "TRIBE (LTD STARTRIBE),",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Розум Системс,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Оптимакрос,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Xsolla,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "МУЛЬТИФАКТОР,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Тест,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Силиз,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "МКК Базис,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ГигаЧат Бизнес,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Лаптев Даниил Сергеевич,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Wisebits,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Глушкова Ксения Евгеньевна,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Онлайн-школа Фоксфорд,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "WINLINE,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ИнтэксСофт,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "БИТ,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Цифровые Пространственные Технологии,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Selecty,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Национальная система платежных карт,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ГКУ Инфогород,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ППК Фонд развития территорий,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "РТК-ЦОД,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Иви,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Bellerage,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Астрософт Про,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Ozon,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Альфа-Банк,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Главгосэкспертиза России,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Frank RG,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "UREMONT,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "101XP,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Копылова Татьяна Алексеевна,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Робот Мия,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Евростройгрупп,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Группа компаний НВМ,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Made of Storm,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Истомин Алексей Сергеевич,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "WEKINGS,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "FutureToday,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "МТС,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Т-Банк,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "UP business,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Первый ОФД,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Loyalty Labs,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Лаборатория Интернет,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "DIGITCORE,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Цифровая Эпоха,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "БЮРО 1440,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Москва Медиа,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Cerca Trova,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "aQsi,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Кушнарев Виталий Александрович,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "IT Solutions Management International Pte. Ltd.,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ОсОО Вектор Лоджик,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Nitka Technologies, Inc.,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ГК Орбита,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Вебпро,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Enjoypro,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Электроагрегат,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Алабуга, ОЭЗ ППТ,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "ANCOR,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Трубная Металлургическая Компания,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Software Country (ТОО Балхаш Системс),",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "WILIX,",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        },
+        {
+          "company": "Наши вакансии",
+          "time": "Недавно",
+          "positionSearched": "Frontend Developer"
+        }
+      ]
     }
   ],
-  "negotiations": [],
+  "negotiations": [
+    {
+      "id": "real-neg-0-1794226122958",
+      "vacancyTitle": "Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139220104",
+      "company": "Lamoda Tech",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "сегодня",
+      "lastMessage": "ОтказFrontend-разработчикLamoda TechсегодняБыл онлайн сегодняРазбирает 77% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139220104"
+    },
+    {
+      "id": "real-neg-1-1794226122958",
+      "vacancyTitle": "Консультант / разработчик frontend SAP UI5 / FIORI",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139231573",
+      "company": "Overtech Consulting Group",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "вчера",
+      "lastMessage": "Не просмотренКонсультант / разработчик frontend SAP UI5 / FIORIOvertech Consulting GroupвчераРазбирает 5% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139231573"
+    },
+    {
+      "id": "real-neg-2-1794226122958",
+      "vacancyTitle": "AI-разработчик / Вайбкодер (Vibe Coding)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138611211",
+      "company": "Vlex AI",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "вчера",
+      "lastMessage": "ПросмотренAI-разработчик / Вайбкодер (Vibe Coding)Vlex AIвчераБыл онлайн сегодняРазбирает 99% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138611211"
+    },
+    {
+      "id": "real-neg-3-1794226122958",
+      "vacancyTitle": "React Native Senior Developer",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139214913",
+      "company": "Itransition",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "7 ноября",
+      "lastMessage": "Не просмотренReact Native Senior DeveloperItransition7 ноябряБыл онлайн 5 дней назадРазбирает 89% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139214913"
+    },
+    {
+      "id": "real-neg-4-1794226122958",
+      "vacancyTitle": "Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139199849",
+      "company": "ЦЕНТР ХК",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "Не просмотренFrontend-разработчикЦЕНТР ХК6 ноябряБыл онлайн сегодняРазбирает 55% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139199849"
+    },
+    {
+      "id": "real-neg-5-1794226122958",
+      "vacancyTitle": "Senior Frontend Developer (React)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139200191",
+      "company": "Data-Driven Lab",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "Не просмотренSenior Frontend Developer (React)Data-Driven Lab6 ноябряБыл онлайн сегодняРазбирает 41% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139200191"
+    },
+    {
+      "id": "real-neg-6-1794226122958",
+      "vacancyTitle": "Senior Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139050660",
+      "company": "Операционное совершенство",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "ОтказSenior Frontend-разработчикОперационное совершенство6 ноябряБыл онлайн сегодняРазбирает 20% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139050660"
+    },
+    {
+      "id": "real-neg-7-1794226122959",
+      "vacancyTitle": "Middle/Senior Frontend Developer",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/136073828",
+      "company": "Честный знак.рф",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "Не просмотренMiddle/Senior Frontend DeveloperЧестный знак.рф6 ноябряБыл онлайн сегодняРазбирает 92% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/136073828"
+    },
+    {
+      "id": "real-neg-8-1794226122959",
+      "vacancyTitle": "Frontend-разработчик (React/Typescript)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139058993",
+      "company": "Группа компаний Экзон",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "ПросмотренFrontend-разработчик (React/Typescript)Группа компаний Экзон6 ноябряРазбирает 74% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139058993"
+    },
+    {
+      "id": "real-neg-9-1794226122959",
+      "vacancyTitle": "Senior Frontend-разработчик (React) в AI-команду",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139178089",
+      "company": "Employcity",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "ОтказSenior Frontend-разработчик (React) в AI-командуEmploycity6 ноябряБыл онлайн сегодняРазбирает 93% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139178089"
+    },
+    {
+      "id": "real-neg-10-1794226122959",
+      "vacancyTitle": "Web - разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139192087",
+      "company": "ИТ-Транс",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "Не просмотренWeb - разработчикИТ-Транс6 ноябряРазбирает 2% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139192087"
+    },
+    {
+      "id": "real-neg-11-1794226122959",
+      "vacancyTitle": "Ведущий frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139180403",
+      "company": "АйСи Инвест",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "6 ноября",
+      "lastMessage": "Не просмотренВедущий frontend-разработчикАйСи Инвест6 ноябряБыл онлайн сегодняРазбирает 46% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139180403"
+    },
+    {
+      "id": "real-neg-12-1794226122959",
+      "vacancyTitle": "Middle + Фронтенд разработчик Vue.js",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139152855",
+      "company": "СИНЕРГИЯ",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "5 ноября",
+      "lastMessage": "Не просмотренMiddle + Фронтенд разработчик Vue.jsСИНЕРГИЯ5 ноябряБыл онлайн сегодняРазбирает 66% откликовПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139152855"
+    },
+    {
+      "id": "real-neg-13-1794226122959",
+      "vacancyTitle": "Senior Frontend Engineer (Vue)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139121118",
+      "company": "ТРТ",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "5 ноября",
+      "lastMessage": "ОтказSenior Frontend Engineer (Vue)ТРТ5 ноябряБыл онлайн сегодняРазбирает 70% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139121118"
+    },
+    {
+      "id": "real-neg-14-1794226122959",
+      "vacancyTitle": "Frontend Developer",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139135334",
+      "company": "STARTRIBE LTD. Разработка",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "5 ноября",
+      "lastMessage": "ПросмотренFrontend DeveloperSTARTRIBE LTD. Разработка5 ноябряБыл онлайн сегодняРазбирает 87% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139135334"
+    },
+    {
+      "id": "real-neg-15-1794226122959",
+      "vacancyTitle": "Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138980297",
+      "company": "Розум Системс",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "5 ноября",
+      "lastMessage": "ОтказFrontend-разработчикРозум Системс5 ноябряБыл онлайн сегодняРазбирает 67% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138980297"
+    },
+    {
+      "id": "real-neg-16-1794226122959",
+      "vacancyTitle": "Senior Frontend Engineer",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138476552",
+      "company": "Xsolla",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "5 ноября",
+      "lastMessage": "ОтказSenior Frontend EngineerXsolla5 ноябряБыл онлайн сегодняРазбирает 66% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138476552"
+    },
+    {
+      "id": "real-neg-17-1794226122959",
+      "vacancyTitle": "Frontend-разработчик (Angular, TypeScript)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138623114",
+      "company": "МУЛЬТИФАКТОР",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "4 ноября",
+      "lastMessage": "ОтказFrontend-разработчик (Angular, TypeScript)МУЛЬТИФАКТОР4 ноябряБыл онлайн сегодняРазбирает 75% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138623114"
+    },
+    {
+      "id": "real-neg-18-1794226122959",
+      "vacancyTitle": "Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138971947",
+      "company": "Тест",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "4 ноября",
+      "lastMessage": "ПросмотренFrontend-разработчикТест4 ноябряБыл онлайн сегодняРазбирает 89% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138971947"
+    },
+    {
+      "id": "real-neg-19-1794226122959",
+      "vacancyTitle": "Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139062164",
+      "company": "Альфа-Деньги",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "4 ноября",
+      "lastMessage": "ПросмотренFrontend-разработчикАльфа-Деньги4 ноябряБыл онлайн сегодняРазбирает 76% откликовОставить отзывПерейти в чатУсилить откликСмотреть статистику по вакансии",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139062164"
+    },
+    {
+      "id": "real-neg-20-1794226122959",
+      "vacancyTitle": "Frontend developer (NAO)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139215385",
+      "company": "SberTech",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "Недавно",
+      "lastMessage": "Frontend developer (NAO)",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139215385"
+    },
+    {
+      "id": "real-neg-21-1794226122959",
+      "vacancyTitle": "Backend-инженер (AI-native разработка)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139122909",
+      "company": "НССД",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "Недавно",
+      "lastMessage": "Backend-инженер (AI-native разработка)",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139122909"
+    },
+    {
+      "id": "real-neg-22-1794226122959",
+      "vacancyTitle": "Фронтенд разработчик (React/ LLM)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138906532",
+      "company": "Bell Integrator",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "Недавно",
+      "lastMessage": "Фронтенд разработчик (React/ LLM)",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138906532"
+    },
+    {
+      "id": "real-neg-23-1794226122959",
+      "vacancyTitle": "Стажер Frontend-разработчик",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138995602",
+      "company": "Bellerage",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "Недавно",
+      "lastMessage": "Стажер Frontend-разработчик",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138995602"
+    },
+    {
+      "id": "real-neg-24-1794226122960",
+      "vacancyTitle": "Full-stack / AI-инженер",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/138767331",
+      "company": "ООО Престо",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "Недавно",
+      "lastMessage": "Full-stack / AI-инженер",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/138767331"
+    },
+    {
+      "id": "real-neg-25-1794226122960",
+      "vacancyTitle": "Fullstack Developer (React + NestJS)",
+      "vacancyUrl": "https://novosibirsk.hh.ru/vacancy/139139362",
+      "company": "3205.team",
+      "salary": "",
+      "status": "response",
+      "statusLabel": "Отправлен",
+      "updatedAt": "Недавно",
+      "lastMessage": "Fullstack Developer (React + NestJS)",
+      "chatUrl": "https://novosibirsk.hh.ru/vacancy/139139362"
+    }
+  ],
   "autoBumpEnabled": true,
-  "lastCheckedAt": "2026-11-09T18:50:00.000Z"
+  "lastCheckedAt": "2026-11-09T12:08:43.314Z"
 }

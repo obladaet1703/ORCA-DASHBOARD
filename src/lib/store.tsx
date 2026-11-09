@@ -260,13 +260,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/hh/import');
       const d = await res.json();
       if (d && d.success && d.data) {
-        const imported = d.data;
-        const exists = accounts.some((a) => a.id === imported.id);
-        const updated = exists
-          ? accounts.map((a) => (a.id === imported.id ? { ...a, ...imported } : a))
-          : [imported, ...accounts];
-        saveAccounts(updated);
-        return true;
+        return importFromJSON(d.data);
       }
     } catch (e) {
       console.error('syncFromBackend error:', e);
@@ -276,13 +270,48 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const importFromJSON = (payload: any): boolean => {
     try {
-      const imported = payload.account || payload;
-      if (!imported || !imported.resumes) return false;
-      const targetId = imported.id || 'hh-acc-1';
+      const raw = payload.account || payload.data || payload;
+      if (!raw) return false;
+      const targetId = raw.id || 'hh-acc-1';
+
       const exists = accounts.some((a) => a.id === targetId);
-      const updated = exists
-        ? accounts.map((a) => (a.id === targetId ? { ...a, ...imported } : a))
-        : [imported, ...accounts];
+      let updated: HHAccount[];
+
+      if (exists) {
+        updated = accounts.map((a) => {
+          if (a.id === targetId) {
+            return {
+              ...a,
+              ...raw,
+              id: a.id,
+              name: raw.name || a.name,
+              applicantName: raw.applicantName || a.applicantName,
+              accountEmail: raw.email || raw.accountEmail || a.accountEmail,
+              phone: raw.phone || a.phone,
+              negotiations: Array.isArray(raw.negotiations) ? raw.negotiations : a.negotiations,
+              statsBreakdown: raw.statsBreakdown || a.statsBreakdown,
+              resumes: (Array.isArray(raw.resumes) && raw.resumes.length > 0) ? raw.resumes : a.resumes,
+            };
+          }
+          return a;
+        });
+      } else {
+        const fallback = INITIAL_HH_ACCOUNTS[0];
+        const newAcc: HHAccount = {
+          ...fallback,
+          ...raw,
+          id: targetId,
+          name: raw.name || fallback.name,
+          applicantName: raw.applicantName || fallback.applicantName,
+          accountEmail: raw.email || raw.accountEmail || fallback.accountEmail,
+          phone: raw.phone || fallback.phone,
+          negotiations: Array.isArray(raw.negotiations) ? raw.negotiations : [],
+          statsBreakdown: raw.statsBreakdown || fallback.statsBreakdown,
+          resumes: (Array.isArray(raw.resumes) && raw.resumes.length > 0) ? raw.resumes : fallback.resumes,
+        };
+        updated = [newAcc, ...accounts];
+      }
+
       saveAccounts(updated);
       return true;
     } catch (e) {
