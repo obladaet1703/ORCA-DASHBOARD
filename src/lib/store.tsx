@@ -72,25 +72,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const parsed: any[] = JSON.parse(savedAccounts);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Миграция: если у сохраненных аккаунтов нет negotiations или recentViews, восстанавливаем их из эталона!
           const merged = parsed.map((acc, idx) => {
             const fallback = INITIAL_HH_ACCOUNTS[idx] || INITIAL_HH_ACCOUNTS[0];
             const accResumes = (acc.resumes && acc.resumes.length > 0) ? acc.resumes : fallback.resumes;
 
+            // Фильтруем любые старые демо/фейковые отклики
+            const realNegotiations = (acc.negotiations || []).filter((n: any) => !n.id?.startsWith('neg-') && n.company !== 'Mindbox');
+
             return {
               ...fallback,
               ...acc,
-              negotiations: (acc.negotiations && acc.negotiations.length > 0)
-                ? acc.negotiations
-                : fallback.negotiations,
+              negotiations: realNegotiations,
               resumes: accResumes.map((r: any, rIdx: number) => {
                 const fallbackResume = fallback.resumes[rIdx] || fallback.resumes[0];
                 return {
                   ...fallbackResume,
                   ...r,
-                  recentViews: (r.recentViews && r.recentViews.length > 0)
-                    ? r.recentViews
-                    : fallbackResume.recentViews,
+                  id: idx === 0 ? '0f2efd1dff1094692c0039ed1f7a365a487370' : r.id,
+                  impressionsCount: idx === 0 ? 43 : (r.impressionsCount || 0),
+                  viewsCount: idx === 0 ? 21 : (r.viewsCount || 0),
+                  invitationsCount: idx === 0 ? 0 : (r.invitationsCount || 0),
+                  recentViews: (r.recentViews || []).filter((v: any) => v.company !== 'Mindbox' && v.company !== 'Ozon FinTech'),
                 };
               }),
             };
@@ -102,6 +104,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         setAccounts(INITIAL_HH_ACCOUNTS);
       }
+    } else {
+      setAccounts(INITIAL_HH_ACCOUNTS);
     }
 
     const savedApps = localStorage.getItem('orca_applications');

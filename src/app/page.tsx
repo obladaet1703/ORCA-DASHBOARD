@@ -16,7 +16,9 @@ import {
   Layers,
   Sparkles,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare,
+  Search
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -51,17 +53,25 @@ function CustomChartTooltip({ active, payload, label }: any) {
 export default function DashboardPage() {
   const { accounts, resumes, channels, applications } = useApp();
 
+  const totalImpressions = accounts.reduce(
+    (sum, acc) => sum + acc.resumes.reduce((s, r) => s + (r.impressionsCount || 0), 0), 
+    0
+  );
+
   const totalViews = accounts.reduce(
     (sum, acc) => sum + acc.resumes.reduce((s, r) => s + (r.viewsCount || 0), 0), 
     0
   );
 
+  const totalInvitations = accounts.reduce(
+    (sum, acc) => sum + acc.resumes.reduce((s, r) => s + (r.invitationsCount || 0), 0), 
+    0
+  );
+
   const funnelData = [
-    { name: 'Отклики', count: 48, rate: '100%', hint: 'Всего отправлено резюме', fill: '#f4f4f5' },
-    { name: 'Просмотры HR', count: 34, rate: '70.8%', hint: 'Открыто эйчарами', fill: '#e4e4e7' },
-    { name: 'Скрининг HR', count: 7, rate: '14.5%', hint: 'Первичный звонок с рекрутером', fill: '#a1a1aa' },
-    { name: 'Техсобес', count: 2, rate: '4.1%', hint: 'Интервью с техлидом / лайвкодинг', fill: '#71717a' },
-    { name: 'Оффер', count: 0, rate: '0%', hint: 'Финальный оффер', fill: '#34d399' },
+    { name: 'Показы в поиске', count: totalImpressions || 43, rate: '100%', hint: 'Появилось в поиске у HR за неделю', fill: '#f4f4f5' },
+    { name: 'Просмотры HR', count: totalViews || 21, rate: `${Math.round(((totalViews || 21) / (totalImpressions || 43)) * 100)}%`, hint: 'Рекрутеры кликнули и открыли резюме', fill: '#a1a1aa' },
+    { name: 'Приглашения', count: totalInvitations, rate: `${totalViews > 0 ? Math.round((totalInvitations / totalViews) * 100) : 0}%`, hint: 'Приглашения на скрининг / собес', fill: '#34d399' },
   ];
 
   return (
@@ -88,34 +98,34 @@ export default function DashboardPage() {
 
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
             <div className="flex items-center justify-between text-zinc-500 mb-2">
+              <span className="text-xs font-medium">Показы в поиске</span>
+              <Search className="w-4 h-4 text-zinc-400" />
+            </div>
+            <div className="text-2xl font-bold text-zinc-100">{totalImpressions}</div>
+            <div className="text-[11px] text-zinc-400 mt-1">
+              За последние 7 дней
+            </div>
+          </div>
+
+          <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
+            <div className="flex items-center justify-between text-zinc-500 mb-2">
               <span className="text-xs font-medium">Просмотры HR</span>
               <Eye className="w-4 h-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">{totalViews}</div>
-            <div className="text-[11px] text-zinc-400 mt-1">
-              Конверсия: <strong className="text-zinc-200">70.8%</strong>
+            <div className="text-[11px] text-violet-400 mt-1 font-medium">
+              Конверсия клика: <strong>{totalImpressions > 0 ? Math.round((totalViews / totalImpressions) * 100) : 0}%</strong>
             </div>
           </div>
 
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
             <div className="flex items-center justify-between text-zinc-500 mb-2">
-              <span className="text-xs font-medium">Telegram Каналы</span>
-              <Send className="w-4 h-4 text-zinc-400" />
+              <span className="text-xs font-medium">Приглашения</span>
+              <MessageSquare className="w-4 h-4 text-emerald-400" />
             </div>
-            <div className="text-2xl font-bold text-zinc-100">{channels.length}</div>
-            <div className="text-[11px] text-zinc-400 mt-1">
-              5 открытых + 1 закрытый
-            </div>
-          </div>
-
-          <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
-            <div className="flex items-center justify-between text-zinc-500 mb-2">
-              <span className="text-xs font-medium">Версии Резюме</span>
-              <FileText className="w-4 h-4 text-zinc-400" />
-            </div>
-            <div className="text-2xl font-bold text-zinc-100">{resumes.length}</div>
-            <div className="text-[11px] text-zinc-400 mt-1">
-              Frontend / Fullstack
+            <div className="text-2xl font-bold text-zinc-100">{totalInvitations}</div>
+            <div className="text-[11px] text-zinc-500 mt-1">
+              {totalInvitations === 0 ? 'Требуется смена позиционирования' : `${totalInvitations} активных`}
             </div>
           </div>
         </div>
