@@ -35,6 +35,7 @@ interface AppContextType {
   setActiveAccountId: (id: string) => void;
   addAccount: (account: Omit<HHAccount, 'id'>) => void;
   updateAccountSession: (accountId: string, cookies: string) => void;
+  deleteAccount: (accountId: string) => void;
   bumpResume: (accountId: string, resumeId: string) => Promise<boolean>;
   addResumeToAccount: (accountId: string, resume: { title: string; status: 'published' | 'hidden' }) => void;
 
@@ -107,6 +108,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const id = `hh-acc-${Date.now()}`;
     const updated = [...accounts, { ...acc, id }];
     saveAccounts(updated);
+  };
+
+  const deleteAccount = (accountId: string) => {
+    const updated = accounts.filter((a) => a.id !== accountId);
+    saveAccounts(updated);
+    if (activeAccountId === accountId && updated.length > 0) {
+      setActiveAccountId(updated[0].id);
+    }
   };
 
   const updateAccountSession = (accountId: string, cookies: string) => {
@@ -212,6 +221,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setActiveAccountId,
         addAccount,
         updateAccountSession,
+        deleteAccount,
         bumpResume,
         addResumeToAccount,
         channels,

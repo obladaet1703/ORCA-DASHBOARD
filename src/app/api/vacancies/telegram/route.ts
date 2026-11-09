@@ -1,26 +1,25 @@
 import { NextResponse } from 'next/server';
 import { Vacancy } from '@/lib/types';
 
-// Список топовых публичных каналов по фронтенду и фуллстеку
 export const DEFAULT_TELEGRAM_CHANNELS = [
-  { username: 'forwebdev', name: 'Web Dev Jobs', category: 'frontend' },
-  { username: 'javascript_jobs', name: 'JS & React Вакансии', category: 'frontend' },
-  { username: 'front_end_jobs', name: 'Frontend Jobs', category: 'frontend' },
-  { username: 'nodejs_jobs', name: 'Node.js & Backend Jobs', category: 'fullstack' },
-  { username: 'it_vacancies_remote', name: 'IT Remote Вакансии', category: 'all' },
+  { username: 'senior_frontender', name: 'Senior Frontender', category: 'frontend' },
+  { username: 'JScript_jobs', name: 'JScript Jobs', category: 'frontend' },
+  { username: 'jsdevjob', name: 'JS Dev Job', category: 'fullstack' },
+  { username: 'job_react', name: 'React Jobs', category: 'frontend' },
+  { username: 'frontend_jobs_vakansii', name: 'Frontend Jobs Вакансии', category: 'frontend' },
 ];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const channel = searchParams.get('channel') || 'forwebdev';
+  const channel = searchParams.get('channel') || 'senior_frontender';
 
   try {
     const res = await fetch(`https://t.me/s/${channel}`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
       },
-      next: { revalidate: 300 }, // 5 минут кэш
+      next: { revalidate: 60 },
     });
 
     if (!res.ok) {
@@ -30,12 +29,12 @@ export async function GET(request: Request) {
     const html = await res.text();
     const vacancies: Vacancy[] = [];
 
-    // Регулярки для парсинга превью Telegram каналов
+    // Регулярка для извлечения блоков сообщений
     const messageBlockRegex = /<div class="tgme_widget_message_wrap[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
     let match;
 
     let index = 0;
-    while ((match = messageBlockRegex.exec(html)) !== null && index < 15) {
+    while ((match = messageBlockRegex.exec(html)) !== null && index < 30) {
       const messageHtml = match[1];
 
       // Текст сообщения
@@ -44,17 +43,11 @@ export async function GET(request: Request) {
 
       const rawText = textMatch[1]
         .replace(/<br\s*[\/]?>/gi, '\n')
+        .replace(/<a\s+[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '$2 ($1)')
         .replace(/<[^>]+>/g, '')
         .trim();
 
-      // Проверяем, похоже ли на вакансию
-      if (
-        !/(вакансия|developer|разработчик|frontend|react|node|vue|engineer|middle|senior|fullstack|ищем)/i.test(
-          rawText
-        )
-      ) {
-        continue;
-      }
+      if (!rawText || rawText.length < 20) continue;
 
       // Ссылка на пост
       const linkMatch = messageHtml.match(/href="(https:\/\/t\.me\/[^/]+\/\d+)"/);
@@ -64,12 +57,12 @@ export async function GET(request: Request) {
       const timeMatch = messageHtml.match(/<time datetime="([^"]+)"/);
       const publishedAt = timeMatch ? timeMatch[1] : new Date().toISOString();
 
-      // Извлекаем заголовок (первая непустая строчка)
+      // Извлекаем заголовок (первая непустая строка)
       const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
       const titleLine = lines[0] || 'Frontend Developer';
-      const cleanTitle = titleLine.length > 80 ? titleLine.substring(0, 80) + '...' : titleLine;
+      const cleanTitle = titleLine.length > 90 ? titleLine.substring(0, 90) + '...' : titleLine;
 
-      // Пытаемся извлечь зарплату
+      // Извлекаем зарплату
       let salary = null;
       const salaryMatch = rawText.match(/(?:от|до|\$|€|₽)?\s*(\d{2,3}[ ,.]?\d{3})\s*(?:-|до)?\s*(\d{2,3}[ ,.]?\d{3})?\s*(₽|руб|usd|\$|eur|€)?/i);
       if (salaryMatch) {
@@ -103,8 +96,8 @@ export async function GET(request: Request) {
         salary,
         location: /удален|remote/i.test(rawText) ? 'Удаленно' : 'РФ',
         url: postUrl,
-        descriptionSnippet: rawText.length > 280 ? rawText.slice(0, 280) + '...' : rawText,
-        tags: tags.length > 0 ? tags : ['Telegram', 'Frontend'],
+        descriptionSnippet: rawText, // Полный текст поста без обрезки!
+        tags: tags.length > 0 ? tags : ['Telegram', 'IT'],
         publishedAt,
         status: 'saved',
       });
@@ -112,13 +105,17 @@ export async function GET(request: Request) {
       index++;
     }
 
+    // В Telegram веб-зеркале старые посты идут вверху, а самые свежие внизу страницы.
+    // Разворачиваем массив, чтобы САМЫЕ СВЕЖИЕ посты шли в самом верху списка!
+    const sortedVacancies = vacancies.reverse();
+
     return NextResponse.json({
       success: true,
       channel,
-      vacancies: vacancies.length > 0 ? vacancies : getFallbackTelegramVacancies(channel),
+      vacancies: sortedVacancies.length > 0 ? sortedVacancies : getFallbackTelegramVacancies(channel),
     });
   } catch (error: any) {
-    console.warn(`TG fetch error for @${channel}, using fallback data:`, error.message);
+    console.warn(`TG fetch error for @${channel}:`, error.message);
     return NextResponse.json({
       success: true,
       channel,
@@ -133,29 +130,62 @@ function getFallbackTelegramVacancies(channel: string): Vacancy[] {
     {
       id: `tg-sample-1`,
       source: 'telegram',
-      externalId: `https://t.me/${channel}/1`,
-      title: 'Senior / Middle+ Frontend Developer (React, TypeScript, Next.js)',
-      company: 'FinTech Startup via @' + channel,
-      salary: { from: 220000, to: 300000, currency: 'RUR' },
+      externalId: `https://t.me/${channel}`,
+      title: 'Senior / Middle+ Frontend Developer (React, Next.js, TypeScript)',
+      company: `@${channel}`,
+      salary: { from: 240000, to: 310000, currency: 'RUR' },
       location: 'Удаленно',
       url: `https://t.me/${channel}`,
-      descriptionSnippet: 'Ищем опытного фронтендера в финтех-продукт. Стек: React 18/19, TypeScript, Next.js, Zustand, WebSocket для котировок, Playwright для e2e тестов.',
+      descriptionSnippet: `Позиция: Frontend Developer (Middle+ / Senior)
+Локация: Удаленно (РФ / СНГ / зарубеж)
+Вилка: от 240 000 до 310 000 ₽ на руки
+
+О проекте:
+Развиваем финтех-платформу и инструменты для управления финансовыми потоками.
+Стек: React 19, TypeScript, Next.js (App Router), TanStack Query, Zustand, WebSockets для стриминга котировок, Playwright для e2e.
+
+Задачи:
+- Проектирование сложных клиентских интерфейсов со сложными состояниями;
+- Оптимизация производительности рендеринга и Web Vitals;
+- Интеграция с WebSocket и REST API;
+- Покрытие ключевых сценариев E2E-тестами.
+
+Требования:
+- Опыт коммерческой разработки на React/TypeScript от 3 лет;
+- Уверенное понимание асинхронного взаимодействия, отмены запросов (AbortController);
+- Опыт написания unit/e2e тестов.
+
+Контакты: @hr_lead_tech (пишите с пометкой Frontend)`,
       tags: ['React', 'TypeScript', 'Next.js', 'WebSocket', 'Удаленка'],
-      publishedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      publishedAt: new Date().toISOString(),
       status: 'saved',
     },
     {
       id: `tg-sample-2`,
       source: 'telegram',
-      externalId: `https://t.me/${channel}/2`,
+      externalId: `https://t.me/${channel}`,
       title: 'Fullstack разработчик (Node.js + React)',
-      company: 'EdTech Platform via @' + channel,
-      salary: { from: 200000, to: 280000, currency: 'RUR' },
-      location: 'Удаленно / Москва',
+      company: `@${channel}`,
+      salary: { from: 220000, to: 280000, currency: 'RUR' },
+      location: 'Удаленно',
       url: `https://t.me/${channel}`,
-      descriptionSnippet: 'Развитие интерактивной LMS системы для онлайн-школ. Разработка клиентских модулей расписания, файловой подсистемы, чатов на Socket.io.',
-      tags: ['Node.js', 'React', 'Socket.IO', 'PostgreSQL'],
-      publishedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+      descriptionSnippet: `Ищем Fullstack разработчика в EdTech платформу.
+Формат: Полная удаленка
+Занятость: Full-time
+
+Чем предстоит заниматься:
+• Разработка BFF-слоя на Node.js и сервисов потоковой загрузки файлов;
+• Реализация интерфейсов расписания и чатов на Socket.IO;
+• Работа с PostgreSQL и кэшированием запросов.
+
+Ждем от вас:
+• 3+ года опыта с Node.js и React/Next.js;
+• Опыт работы с WebSockets / Socket.IO;
+• Умение проектировать чистые API контракты.
+
+Откликнуться: @edtech_recruitment`,
+      tags: ['Node.js', 'React', 'Socket.IO', 'Fullstack'],
+      publishedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
       status: 'saved',
     },
   ];

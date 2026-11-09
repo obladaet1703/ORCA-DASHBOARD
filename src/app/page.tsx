@@ -8,15 +8,15 @@ import {
   Building2, 
   Send, 
   FileText, 
-  Kanban, 
   ArrowUpRight, 
   Eye, 
   Clock, 
   CheckCircle2, 
-  RefreshCw,
+  TrendingUp,
+  Layers,
   Sparkles,
-  Zap,
-  Lock
+  BarChart3,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -24,8 +24,29 @@ import {
   Bar, 
   XAxis, 
   YAxis, 
-  Tooltip 
+  Tooltip,
+  Cell,
+  CartesianGrid
 } from 'recharts';
+
+// Кастомный высококонтрастный тултип в стиле shadcn
+function CustomChartTooltip({ active, payload, label }: any) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-zinc-900 border border-zinc-700/80 px-3.5 py-2.5 rounded-xl shadow-2xl space-y-1 z-50">
+        <div className="text-xs font-semibold text-zinc-100">{label}</div>
+        <div className="text-sm font-bold text-emerald-400">
+          {data.count} <span className="text-xs font-normal text-zinc-400">кандидатур ({data.rate})</span>
+        </div>
+        <div className="text-[10px] text-zinc-500 pt-0.5 border-t border-zinc-800">
+          {data.hint}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
 
 export default function DashboardPage() {
   const { accounts, resumes, channels, applications } = useApp();
@@ -36,11 +57,11 @@ export default function DashboardPage() {
   );
 
   const funnelData = [
-    { name: 'Отклики', count: 48 },
-    { name: 'Просмотры', count: 34 },
-    { name: 'Скрининги', count: 7 },
-    { name: 'Техсобесы', count: 2 },
-    { name: 'Офферы', count: 0 },
+    { name: 'Отклики', count: 48, rate: '100%', hint: 'Всего отправлено резюме', fill: '#f4f4f5' },
+    { name: 'Просмотры HR', count: 34, rate: '70.8%', hint: 'Открыто эйчарами', fill: '#e4e4e7' },
+    { name: 'Скрининг HR', count: 7, rate: '14.5%', hint: 'Первичный звонок с рекрутером', fill: '#a1a1aa' },
+    { name: 'Техсобес', count: 2, rate: '4.1%', hint: 'Интервью с техлидом / лайвкодинг', fill: '#71717a' },
+    { name: 'Оффер', count: 0, rate: '0%', hint: 'Финальный оффер', fill: '#34d399' },
   ];
 
   return (
@@ -51,7 +72,7 @@ export default function DashboardPage() {
       />
 
       <main className="p-6 max-w-6xl w-full mx-auto space-y-6">
-        {/* KPI Grid in strict shadcn style */}
+        {/* KPI Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
             <div className="flex items-center justify-between text-zinc-500 mb-2">
@@ -83,7 +104,7 @@ export default function DashboardPage() {
             </div>
             <div className="text-2xl font-bold text-zinc-100">{channels.length}</div>
             <div className="text-[11px] text-zinc-400 mt-1">
-              5 открытых + 1 приватный
+              5 открытых + 1 закрытый
             </div>
           </div>
 
@@ -111,7 +132,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm text-zinc-100">Наш hh.ru Портал</h3>
-                    <p className="text-[11px] text-zinc-500">Оркестрация 2 аккаунтов и авто-поднятие</p>
+                    <p className="text-[11px] text-zinc-500">Оркестрация аккаунтов и авто-поднятие</p>
                   </div>
                 </div>
                 <Link
@@ -142,12 +163,12 @@ export default function DashboardPage() {
             </div>
 
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-between text-xs">
-              <span className="text-zinc-500">Синхронизация активна</span>
+              <span className="text-zinc-500">Авто-поднятие активно</span>
               <Link
                 href="/hh"
                 className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-medium border border-zinc-800"
               >
-                Управление аккаунтами и резюме →
+                Управление аккаунтами →
               </Link>
             </div>
           </div>
@@ -162,7 +183,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm text-zinc-100">Telegram Каналы</h3>
-                    <p className="text-[11px] text-zinc-500">6 целевых каналов с AI-откликами</p>
+                    <p className="text-[11px] text-zinc-500">6 целевых каналов со свежими вакансиями</p>
                   </div>
                 </div>
                 <Link
@@ -191,38 +212,73 @@ export default function DashboardPage() {
             </div>
 
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-between text-xs">
-              <span className="text-zinc-500">AI-генератор сопроводительных</span>
+              <span className="text-zinc-500">Сортировка от новых к старым</span>
               <Link
                 href="/telegram"
                 className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-medium border border-zinc-800"
               >
-                Смотреть вакансии в каналах →
+                Читать посты в каналах →
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Minimalist Conversion Funnel */}
-        <div className="border border-zinc-800 bg-zinc-950/50 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
+        {/* Clear, High-Contrast Conversion Funnel Chart */}
+        <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800/80">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-100">Воронка конверсии</h3>
-              <p className="text-xs text-zinc-500">Отслеживание прохождения этапов</p>
+              <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-zinc-400" />
+                Воронка конверсии откликов
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Наведи курсор на любой столбец для просмотра подробной статистики и процента прохождения
+              </p>
             </div>
-            <Link href="/kanban" className="text-xs text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1">
-              Канбан доска <ArrowUpRight className="w-3 h-3" />
-            </Link>
+
+            <div className="flex items-center gap-4 text-xs text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-zinc-100" /> Отклики (48)
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" /> Просмотры (34)
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> Скрининги (7)
+              </span>
+            </div>
           </div>
 
-          <div className="h-44 w-full">
+          <div className="h-60 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={funnelData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fafafa', fontSize: '12px' }}
+              <BarChart data={funnelData} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#a1a1aa" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={{ stroke: '#27272a' }}
                 />
-                <Bar dataKey="count" fill="#3f3f46" radius={[4, 4, 0, 0]} activeBar={{ fill: '#d4d4d8' }} />
+                <YAxis 
+                  stroke="#a1a1aa" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={{ stroke: '#27272a' }}
+                />
+                <Tooltip 
+                  content={<CustomChartTooltip />} 
+                  cursor={{ fill: 'rgba(255, 255, 255, 0.04)' }} 
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                  {funnelData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.fill} 
+                      className="hover:opacity-80 transition-opacity cursor-pointer"
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
