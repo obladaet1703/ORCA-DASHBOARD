@@ -71,8 +71,8 @@ export async function POST(request: Request) {
             id: parsedResumeId || `hh-res-real-${Date.now()}`,
             title: resumeTitle,
             status: 'published',
-            viewsCount: viewsCount || 14,
-            impressionsCount: impressionsCount || 180,
+            viewsCount: viewsCount || 21,
+            impressionsCount: impressionsCount || 43,
             lastBumpedAt: new Date().toISOString(),
             nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
           }

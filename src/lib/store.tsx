@@ -39,7 +39,9 @@ interface AppContextType {
   deleteAccount: (accountId: string) => void;
   bumpResume: (accountId: string, resumeId: string) => Promise<boolean>;
   addResumeToAccount: (accountId: string, resume: { title: string; status: 'published' | 'hidden' }) => void;
-  updateAccountStats: (accountId: string, stats: { viewsCount: number; impressionsCount: number; invitationsCount: number }) => void;
+  updateAccountStats: (accountId: string, stats: { appliedCount: number; viewsCount: number; impressionsCount: number; invitationsCount: number }) => void;
+  syncFromBackend: () => Promise<boolean>;
+  importFromJSON: (payload: any) => boolean;
 
   // Telegram channels
   channels: TelegramChannelItem[];
@@ -110,6 +112,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const savedApps = localStorage.getItem('orca_applications');
     if (savedApps) try { setApplications(JSON.parse(savedApps)); } catch (e) {}
+
+    // Автоматическая подтяжка реальных данных, сохраненных на бэкенде (/data/hh-data.json)
+    fetch('/api/hh/import')
+      .then((res) => res.json())
+      .then((d) => {
+        if (d && d.success && d.data) {
+          const imported = d.data;
+          setAccounts((prev) => {
+            const exists = prev.some((a) => a.id === imported.id);
+            const updated = exists
+              ? prev.map((a) => (a.id === imported.id ? { ...a, ...imported } : a))
+              : [imported, ...prev];
+            localStorage.setItem('orca_accounts', JSON.stringify(updated));
+            return updated;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const saveResumes = (data: ResumeProfile[]) => {
@@ -179,7 +199,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     saveAccounts(updated);
   };
 
-  const updateAccountStats = (accountId: string, stats: { viewsCount: number; impressionsCount: number; invitationsCount: number }) => {
+  const updateAccountStats = (accountId: string, stats: { appliedCount: number; viewsCount: number; impressionsCount: number; invitationsCount: number }) => {
     const updated = accounts.map((acc) => {
       if (acc.id === accountId) {
         return {
@@ -188,6 +208,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (idx === 0) {
               return {
                 ...r,
+                appliedCount: stats.appliedCount,
                 viewsCount: stats.viewsCount,
                 impressionsCount: stats.impressionsCount,
                 invitationsCount: stats.invitationsCount,
@@ -200,6 +221,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return acc;
     });
     saveAccounts(updated);
+  };
+
+  const syncFromBackend = async (): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/hh/import');
+      const d = await res.json();
+      if (d && d.success && d.data) {
+        const imported = d.data;
+        const exists = accounts.some((a) => a.id === imported.id);
+        const updated = exists
+          ? accounts.map((a) => (a.id === imported.id ? { ...a, ...imported } : a))
+          : [imported, ...accounts];
+        saveAccounts(updated);
+        return true;
+      }
+    } catch (e) {
+      console.error('syncFromBackend error:', e);
+    }
+    return false;
+  };
+
+  const importFromJSON = (payload: any): boolean => {
+    try {
+      const imported = payload.account || payload;
+      if (!imported || !imported.resumes) return false;
+      const targetId = imported.id || 'hh-acc-1';
+      const exists = accounts.some((a) => a.id === targetId);
+      const updated = exists
+        ? accounts.map((a) => (a.id === targetId ? { ...a, ...imported } : a))
+        : [imported, ...accounts];
+      saveAccounts(updated);
+      return true;
+    } catch (e) {
+      console.error('importFromJSON error:', e);
+      return false;
+    }
   };
 
   const bumpResume = async (accountId: string, resumeId: string): Promise<boolean> => {
@@ -220,8 +277,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   ...r,
                   lastBumpedAt: new Date().toISOString(),
                   nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-                  viewsCount: (r.viewsCount || 0) + 1,
-                  impressionsCount: (r.impressionsCount || 0) + 8,
                 };
               }
               return r;
@@ -298,6 +353,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         bumpResume,
         addResumeToAccount,
         updateAccountStats,
+        syncFromBackend,
+        importFromJSON,
         channels,
         applications,
         addApplication,

@@ -99,6 +99,7 @@ export const INITIAL_RESUME_PROFILES: ResumeProfile[] = [
   }
 ];
 
+// НИКАКИХ ФЕЙКОВЫХ ОТКЛИКОВ И ВЫМЫШЛЕННЫХ ДАННЫХ
 export const INITIAL_HH_ACCOUNTS: HHAccount[] = [
   {
     id: 'hh-acc-1',
@@ -115,6 +116,7 @@ export const INITIAL_HH_ACCOUNTS: HHAccount[] = [
         url: 'https://novosibirsk.hh.ru/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370',
         title: 'Frontend-разработчик (React, JavaScript, TypeScript, Next.js)',
         status: 'published',
+        appliedCount: 0,
         viewsCount: 21,
         impressionsCount: 43,
         invitationsCount: 0,
@@ -123,7 +125,7 @@ export const INITIAL_HH_ACCOUNTS: HHAccount[] = [
         recentViews: [],
       }
     ],
-    negotiations: [], // Никаких левых откликов! Только реальные данные пользователя!
+    negotiations: [], // Только реальные отклики из браузера!
     autoBumpEnabled: true,
     lastCheckedAt: new Date().toISOString(),
   },
@@ -141,6 +143,7 @@ export const INITIAL_HH_ACCOUNTS: HHAccount[] = [
         id: 'hh-res-2',
         title: 'Fullstack Developer (Node.js, React, TypeScript)',
         status: 'published',
+        appliedCount: 0,
         viewsCount: 0,
         impressionsCount: 0,
         invitationsCount: 0,

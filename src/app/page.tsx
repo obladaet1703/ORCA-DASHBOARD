@@ -53,6 +53,11 @@ function CustomChartTooltip({ active, payload, label }: any) {
 export default function DashboardPage() {
   const { accounts, resumes, channels, applications } = useApp();
 
+  const totalApplied = accounts.reduce(
+    (sum, acc) => sum + (acc.resumes[0]?.appliedCount || acc.negotiations?.length || 0), 
+    0
+  );
+
   const totalImpressions = accounts.reduce(
     (sum, acc) => sum + acc.resumes.reduce((s, r) => s + (r.impressionsCount || 0), 0), 
     0
@@ -69,9 +74,34 @@ export default function DashboardPage() {
   );
 
   const funnelData = [
-    { name: 'Показы в поиске', count: totalImpressions || 43, rate: '100%', hint: 'Появилось в поиске у HR за неделю', fill: '#f4f4f5' },
-    { name: 'Просмотры HR', count: totalViews || 21, rate: `${Math.round(((totalViews || 21) / (totalImpressions || 43)) * 100)}%`, hint: 'Рекрутеры кликнули и открыли резюме', fill: '#a1a1aa' },
-    { name: 'Приглашения', count: totalInvitations, rate: `${totalViews > 0 ? Math.round((totalInvitations / totalViews) * 100) : 0}%`, hint: 'Приглашения на скрининг / собес', fill: '#34d399' },
+    { 
+      name: 'Отклики', 
+      count: totalApplied, 
+      rate: '100%', 
+      hint: 'Отправлено резюме на вакансии работодателей', 
+      fill: '#818cf8' 
+    },
+    { 
+      name: 'Показы в поиске', 
+      count: totalImpressions, 
+      rate: `${totalImpressions} раз`, 
+      hint: 'Появилось в выдаче у рекрутеров за неделю', 
+      fill: '#f4f4f5' 
+    },
+    { 
+      name: 'Просмотры HR', 
+      count: totalViews, 
+      rate: totalApplied > 0 ? `${Math.round((totalViews / totalApplied) * 100)}%` : (totalImpressions > 0 ? `${Math.round((totalViews / totalImpressions) * 100)}%` : '0%'), 
+      hint: 'Рекрутеры открыли и изучили резюме (из откликов и поиска)', 
+      fill: '#a78bfa' 
+    },
+    { 
+      name: 'Приглашения', 
+      count: totalInvitations, 
+      rate: totalViews > 0 ? `${Math.round((totalInvitations / totalViews) * 100)}%` : '0%', 
+      hint: 'Приглашения на интервью / скрининг', 
+      fill: '#34d399' 
+    },
   ];
 
   return (
@@ -86,13 +116,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
             <div className="flex items-center justify-between text-zinc-500 mb-2">
-              <span className="text-xs font-medium">Аккаунты hh.ru</span>
-              <Building2 className="w-4 h-4 text-zinc-400" />
+              <span className="text-xs font-medium">Отправлено откликов</span>
+              <Send className="w-4 h-4 text-indigo-400" />
             </div>
-            <div className="text-2xl font-bold text-zinc-100">{accounts.length}</div>
-            <div className="text-[11px] text-emerald-400 font-medium flex items-center gap-1 mt-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Оркестратор активен
+            <div className="text-2xl font-bold text-zinc-100">{totalApplied}</div>
+            <div className="text-[11px] text-zinc-400 mt-1">
+              {totalApplied > 0 ? `${totalApplied} в работе` : 'Ожидает синхронизации'}
             </div>
           </div>
 
@@ -110,11 +139,13 @@ export default function DashboardPage() {
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
             <div className="flex items-center justify-between text-zinc-500 mb-2">
               <span className="text-xs font-medium">Просмотры HR</span>
-              <Eye className="w-4 h-4 text-zinc-400" />
+              <Eye className="w-4 h-4 text-violet-400" />
             </div>
             <div className="text-2xl font-bold text-zinc-100">{totalViews}</div>
             <div className="text-[11px] text-violet-400 mt-1 font-medium">
-              Конверсия клика: <strong>{totalImpressions > 0 ? Math.round((totalViews / totalImpressions) * 100) : 0}%</strong>
+              {totalApplied > 0 
+                ? `Конверсия откликов: ${Math.round((totalViews / totalApplied) * 100)}%` 
+                : `Клик в поиске: ${totalImpressions > 0 ? Math.round((totalViews / totalImpressions) * 100) : 0}%`}
             </div>
           </div>
 

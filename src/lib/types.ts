@@ -90,6 +90,7 @@ export interface HHAccount {
     lastBumpedAt?: string;
     nextBumpAvailableAt?: string;
     status: 'published' | 'hidden';
+    appliedCount?: number;
     viewsCount?: number;
     impressionsCount?: number;
     invitationsCount?: number;

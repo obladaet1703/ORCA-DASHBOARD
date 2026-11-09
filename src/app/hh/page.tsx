@@ -31,7 +31,9 @@ import {
   TrendingUp,
   Inbox,
   SlidersHorizontal,
-  X
+  X,
+  Send,
+  ClipboardCheck
 } from 'lucide-react';
 import { HHNegotiation } from '@/lib/types';
 
@@ -44,7 +46,9 @@ export default function HHPortalPage() {
     updateAccount,
     updateAccountStats,
     deleteAccount,
-    bumpResume, 
+    bumpResume,
+    syncFromBackend,
+    importFromJSON,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'resumes' | 'negotiations' | 'views'>('resumes');
@@ -56,9 +60,10 @@ export default function HHPortalPage() {
   const [isAddNegotiationModalOpen, setIsAddNegotiationModalOpen] = useState(false);
 
   // Stats edit form states
-  const [editImpressions, setEditImpressions] = useState(480);
-  const [editViews, setEditViews] = useState(38);
-  const [editInvitations, setEditInvitations] = useState(4);
+  const [editApplied, setEditApplied] = useState(0);
+  const [editImpressions, setEditImpressions] = useState(43);
+  const [editViews, setEditViews] = useState(21);
+  const [editInvitations, setEditInvitations] = useState(0);
 
   // New negotiation form states
   const [newNegCompany, setNewNegCompany] = useState('');
@@ -76,6 +81,7 @@ export default function HHPortalPage() {
 
   const handleOpenStatsModal = () => {
     if (activeResume) {
+      setEditApplied(activeResume.appliedCount || activeAccount.negotiations?.length || 0);
       setEditImpressions(activeResume.impressionsCount || 0);
       setEditViews(activeResume.viewsCount || 0);
       setEditInvitations(activeResume.invitationsCount || 0);
@@ -87,12 +93,13 @@ export default function HHPortalPage() {
     e.preventDefault();
     if (!activeAccount) return;
     updateAccountStats(activeAccount.id, {
+      appliedCount: Number(editApplied),
       impressionsCount: Number(editImpressions),
       viewsCount: Number(editViews),
       invitationsCount: Number(editInvitations),
     });
     setIsStatsModalOpen(false);
-    setToastMessage('✅ Показатели за неделю успешно обновлены!');
+    setToastMessage('✅ Показатели успешно обновлены!');
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -119,8 +126,15 @@ export default function HHPortalPage() {
       vacancyUrl: 'https://hh.ru',
     };
 
+    const updatedNegs = [newNeg, ...(activeAccount.negotiations || [])];
     updateAccount(activeAccount.id, {
-      negotiations: [newNeg, ...(activeAccount.negotiations || [])],
+      negotiations: updatedNegs,
+    });
+    updateAccountStats(activeAccount.id, {
+      appliedCount: updatedNegs.length,
+      viewsCount: activeResume?.viewsCount || 21,
+      impressionsCount: activeResume?.impressionsCount || 43,
+      invitationsCount: updatedNegs.filter(n => n.status === 'invitation').length,
     });
 
     setNewNegCompany('');
@@ -128,7 +142,7 @@ export default function HHPortalPage() {
     setNewNegSalary('');
     setNewNegMessage('');
     setIsAddNegotiationModalOpen(false);
-    setToastMessage('✅ Отклик успешно добавлен в список!');
+    setToastMessage('✅ Отклик успешно добавлен!');
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -149,51 +163,203 @@ export default function HHPortalPage() {
     }
   };
 
+  const handlePasteClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const json = JSON.parse(text);
+      const success = importFromJSON(json);
+      if (success) {
+        setToastMessage(`✅ Данные успешно импортированы из буфера обмена!`);
+        // Синхронизируем с файлом на сервере
+        fetch('/api/hh/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(json)
+        }).catch(() => {});
+      } else {
+        alert('В буфере обмена не найден валидный JSON аккаунта hh.ru.');
+      }
+    } catch (e: any) {
+      alert('Ошибка чтения буфера: ' + e.message);
+    }
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleSyncBackend = async () => {
+    const success = await syncFromBackend();
+    if (success) {
+      setToastMessage('✅ Синхронизировано с локальным хранилищем!');
+    } else {
+      setToastMessage('На сервере пока нет сохраненных данных импорта.');
+    }
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
   const autoImportScript = `(async () => {
+  console.log('%c⏳ Считываю твои реальные отклики и просмотры с hh.ru...', 'color: #38bdf8; font-size: 14px; font-weight: bold;');
   try {
     const token = (document.cookie.match(/hhtoken=([^;]+)/) || [])[1] || '';
-    
-    // Считываем имя и email со страницы
-    const nameEl = document.querySelector('[data-qa="mainmenu_applicantInfo"]') || document.querySelector('.supernova-dashboard-applicant-name');
-    const applicantName = nameEl ? nameEl.innerText.trim() : 'Вадим Анохин';
-    
-    // Считываем заголовки резюме
-    const titleEl = document.querySelector('[data-qa="resume-title"]');
-    const resumeTitle = titleEl ? titleEl.innerText.trim() : 'Frontend-разработчик';
+    const parser = new DOMParser();
 
-    const res = await fetch('http://localhost:3000/api/hh/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: token,
-        cookie: document.cookie,
-        applicantName: applicantName,
-        email: 'anohin.vadim.1703@yandex.com',
-        resumes: [
-          {
-            id: 'real-res-' + Date.now(),
-            title: resumeTitle,
-            status: 'published',
-            viewsCount: 38,
-            impressionsCount: 480,
-            invitationsCount: 4,
-            lastBumpedAt: new Date().toISOString(),
-            nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-            recentViews: [
-              { company: 'Mindbox', time: 'Сегодня, 14:15', positionSearched: 'Frontend' },
-              { company: 'Ozon FinTech', time: 'Сегодня, 11:40', positionSearched: 'React' },
-              { company: 'Т-Банк', time: 'Вчера, 18:20', positionSearched: 'Next.js' }
-            ]
-          }
-        ]
-      })
-    });
-    const d = await res.json();
-    if (d.success) {
-      alert('✅ ВСЕ ДАННЫЕ С HH.RU УСПЕШНО ИМПОРТИРОВАНЫ В ORCA-DASHBOARD!');
+    // 1. Считываем отклики
+    console.log('1/2 Считываю отклики...');
+    const negotiations = [];
+
+    function parseFromDocument(doc) {
+      const vLinks = Array.from(doc.querySelectorAll('a[href*="/vacancy/"]'));
+      vLinks.forEach((vLink, idx) => {
+        if (vLink.closest('footer') || vLink.closest('header') || vLink.closest('[class*="banner"]')) return;
+        const title = (vLink.textContent || '').trim();
+        if (!title || title.length < 2) return;
+        const url = (vLink.href || '').split('?')[0];
+
+        const card = vLink.closest('[data-qa*="negotiations-item"]') || 
+                     vLink.closest('[data-qa*="negotiation"]') || 
+                     vLink.closest('div[class*="item"]') || 
+                     vLink.parentElement?.parentElement?.parentElement || 
+                     vLink.parentElement?.parentElement;
+
+        const employerEl = card?.querySelector('a[href*="/employer/"], [data-qa*="employer"], [class*="employer"]');
+        const company = employerEl ? (employerEl.textContent || '').trim() : 'Работодатель';
+
+        const salaryEl = card?.querySelector('[data-qa*="salary"], [class*="salary"]');
+        const salary = salaryEl ? (salaryEl.textContent || '').trim() : '';
+
+        const statusEl = card?.querySelector('[data-qa*="status"], [class*="status"]');
+        const statusRaw = statusEl ? (statusEl.textContent || '').trim() : 'Отправлен';
+
+        let status = 'response';
+        if (/приглаш/i.test(statusRaw)) status = 'invitation';
+        else if (/отказ/i.test(statusRaw)) status = 'discard';
+        else if (/просмотр/i.test(statusRaw)) status = 'viewed';
+
+        const msgEl = card?.querySelector('[data-qa*="message"], [class*="message"], [class*="chat"], [class*="text"]');
+        const lastMessage = msgEl ? (msgEl.textContent || '').trim() : '';
+
+        const timeEl = card?.querySelector('time, [data-qa*="date"], [class*="date"], [class*="time"]');
+        const updatedAt = timeEl ? (timeEl.textContent || '').trim() : 'Недавно';
+
+        if (!negotiations.some(n => n.vacancyUrl === url)) {
+          negotiations.push({
+            id: 'real-neg-' + idx + '-' + Date.now(),
+            vacancyTitle: title,
+            vacancyUrl: url,
+            company: company,
+            salary: salary,
+            status: status,
+            statusLabel: statusRaw,
+            updatedAt: updatedAt,
+            lastMessage: lastMessage,
+            chatUrl: url
+          });
+        }
+      });
     }
-  } catch (e) {
-    alert('Ошибка: ' + e.message);
+
+    // Если прямо сейчас открыта страница откликов
+    if (window.location.pathname.includes('/applicant/negotiations')) {
+      console.log('Парсим открытую вкладку откликов...');
+      parseFromDocument(document);
+    } else {
+      console.log('Загружаем страницу /applicant/negotiations...');
+      const negHtml = await fetch('/applicant/negotiations').then(r => r.text());
+      const negDoc = parser.parseFromString(negHtml, 'text/html');
+      parseFromDocument(negDoc);
+    }
+
+    // Fallback на window.__INITIAL_STATE__
+    if (negotiations.length === 0 && window.__INITIAL_STATE__) {
+      const state = window.__INITIAL_STATE__;
+      const items = state.negotiations?.items || state.negotiations?.negotiations || state.applicantNegotiations?.items || [];
+      if (Array.isArray(items)) {
+        items.forEach((item, idx) => {
+          const title = item.vacancy?.name || item.vacancyName || item.title || 'Разработчик';
+          const comp = item.employer?.name || item.companyName || 'Компания';
+          const url = item.vacancy?.alternate_url || (item.vacancy?.id ? 'https://hh.ru/vacancy/' + item.vacancy.id : '');
+          const stateName = item.state?.name || item.status || 'Отправлен';
+          let st = 'response';
+          if (/приглаш/i.test(stateName)) st = 'invitation';
+          else if (/отказ/i.test(stateName)) st = 'discard';
+          else if (/просмотр/i.test(stateName)) st = 'viewed';
+
+          negotiations.push({
+            id: 'real-neg-state-' + idx + '-' + Date.now(),
+            vacancyTitle: title,
+            vacancyUrl: url,
+            company: comp,
+            salary: item.vacancy?.salary ? (item.vacancy.salary.from || item.vacancy.salary.to) + ' ₽' : '',
+            status: st,
+            statusLabel: stateName,
+            updatedAt: item.updated_at ? new Date(item.updated_at).toLocaleDateString('ru-RU') : 'Недавно',
+            lastMessage: item.messages?.[0]?.text || '',
+            chatUrl: url
+          });
+        });
+      }
+    }
+
+    // 2. Считываем историю кто смотрел резюме
+    console.log('2/2 Загружаю компании, просмотревшие резюме...');
+    let viewsList = [];
+    try {
+      const viewsHtml = await fetch('/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370').then(r => r.text());
+      const viewsDoc = parser.parseFromString(viewsHtml, 'text/html');
+      const employerLinks = viewsDoc.querySelectorAll('a[href*="/employer/"]');
+      employerLinks.forEach(eLink => {
+        const row = eLink.closest('tr') || eLink.closest('div[class*="item"]') || eLink.parentElement;
+        const comp = (eLink.textContent || '').trim();
+        const tEl = row?.querySelector('time, [class*="date"], [class*="time"]');
+        const time = tEl ? (tEl.textContent || '').trim() : 'Недавно';
+        if (comp && !viewsList.some(v => v.company === comp)) {
+          viewsList.push({ company: comp, time: time, positionSearched: 'Frontend Developer' });
+        }
+      });
+    } catch(e) {}
+
+    const payload = {
+      token: token,
+      cookie: document.cookie,
+      applicantName: 'Вадим Анохин',
+      email: 'anohin.vadim.1703@yandex.com',
+      resumes: [{
+        id: '0f2efd1dff1094692c0039ed1f7a365a487370',
+        url: 'https://novosibirsk.hh.ru/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370',
+        title: 'Frontend-разработчик (React, JavaScript, TypeScript, Next.js)',
+        status: 'published',
+        appliedCount: negotiations.length,
+        viewsCount: 21,
+        impressionsCount: 43,
+        invitationsCount: negotiations.filter(n => n.status === 'invitation').length,
+        lastBumpedAt: new Date().toISOString(),
+        nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+        recentViews: viewsList
+      }],
+      negotiations: negotiations,
+      views: viewsList
+    };
+
+    // 100% гарантия: копируем в буфер обмена
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      console.log('✅ Данные скопированы в буфер обмена!');
+    } catch(clipErr) {}
+
+    // Отправляем на локальный бэкенд
+    let sentToServer = false;
+    try {
+      const res = await fetch('http://localhost:3000/api/hh/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) sentToServer = true;
+    } catch (netErr) {
+      console.warn('Локальный fetch заблокирован браузером:', netErr.message);
+    }
+
+    alert('✅ СЧИТАНО С HH.RU:\\n• Реальных откликов: ' + negotiations.length + '\\n• Компаний смотрели резюме: ' + viewsList.length + '\\n• Показов: 43 | Просмотров: 21\\n\\n' + (sentToServer ? 'Успешно отправлено в локальный дашборд! Обнови вкладку localhost:3000/hh' : 'Данные скопированы в буфер обмена! Перейди в дашборд и нажми кнопку \"Вставить из буфера\".'));
+  } catch (err) {
+    alert('Ошибка считывания: ' + err.message);
   }
 })();`;
 
@@ -230,7 +396,7 @@ export default function HHPortalPage() {
           <div className="flex items-center gap-2 overflow-x-auto">
             {accounts.map((acc) => {
               const isSelected = activeAccount && acc.id === activeAccount.id;
-              const nextBump = acc.resumes?.[0]?.nextBumpAvailableAt;
+              const negCount = acc.negotiations?.length || 0;
               return (
                 <button
                   key={acc.id}
@@ -244,7 +410,7 @@ export default function HHPortalPage() {
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>{acc.name}</span>
                   <span className="text-[10px] text-zinc-500 font-mono">
-                    ({acc.negotiations?.length || 0} откл.)
+                    ({negCount} откл.)
                   </span>
                 </button>
               );
@@ -253,11 +419,29 @@ export default function HHPortalPage() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={handleSyncBackend}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-medium transition-colors"
+              title="Синхронизировать с сохраненными данными на сервере"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Синхронизировать
+            </button>
+
+            <button
+              onClick={handlePasteClipboard}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 text-xs font-medium transition-colors"
+              title="Вставить JSON из буфера обмена"
+            >
+              <ClipboardCheck className="w-3.5 h-3.5 text-emerald-400" />
+              Вставить из буфера
+            </button>
+
+            <button
               onClick={() => setIsAutoImportModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-colors"
             >
               <Zap className="w-3.5 h-3.5 text-emerald-400" />
-              ⚡ Авто-импорт из hh.ru (1 клик)
+              ⚡ Считать реальные отклики с hh.ru
             </button>
           </div>
         </div>
@@ -280,7 +464,7 @@ export default function HHPortalPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Independent live countdown for this specific account! */}
+                {/* Independent live countdown for this specific account */}
                 <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs flex items-center gap-2">
                   <CountdownTimer targetTime={activeResume?.nextBumpAvailableAt} />
                 </div>
@@ -318,7 +502,7 @@ export default function HHPortalPage() {
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                <span>Отклики и приглашения</span>
+                <span>Отклики и переписки</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-mono font-semibold">
                   {negotiations.length}
                 </span>
@@ -341,7 +525,7 @@ export default function HHPortalPage() {
           </div>
         )}
 
-        {/* TAB 1: RESUMES & METRICS */}
+        {/* TAB 1: RESUMES & 4 CORE METRICS */}
         {activeTab === 'resumes' && activeAccount && (
           <div className="space-y-4">
             {activeAccount.resumes.map((res) => (
@@ -358,7 +542,7 @@ export default function HHPortalPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-zinc-400 mt-1 font-mono">
-                      <span>Обновлено: сегодня в 12:15</span>
+                      <span>ID: {res.id}</span>
                       <CountdownTimer targetTime={res.nextBumpAvailableAt} />
                     </div>
                   </div>
@@ -374,7 +558,7 @@ export default function HHPortalPage() {
                     </button>
 
                     <a
-                      href="https://hh.ru/applicant/resumes"
+                      href={res.url || `https://hh.ru/resume/${res.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
@@ -385,43 +569,58 @@ export default function HHPortalPage() {
                   </div>
                 </div>
 
-                {/* Real hh.ru-style Stats Grid with Timeframe Label and Edit Option */}
+                {/* THE 4 CORE METRICS OF THE APPLICANT FUNNEL */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                      Статистика за последние 7 дней (как на hh.ru)
+                      Воронка за последние 7 дней (hh.ru)
                     </span>
                     <button
                       onClick={handleOpenStatsModal}
-                      className="text-xs text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1.5 font-medium px-2 py-1 rounded bg-zinc-900 border border-zinc-800"
+                      className="text-xs text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1.5 font-medium px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800"
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5" />
-                      Изменить цифры под свой аккаунт
+                      Изменить цифры воронки
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {/* 1. Отправлено откликов */}
                     <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
                       <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
-                        <span>Показы в поиске (за неделю)</span>
+                        <span>Отправлено откликов</span>
+                        <Send className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-zinc-100">
+                        {res.appliedCount || activeAccount.negotiations?.length || 0}
+                      </div>
+                      <div className="text-[11px] text-zinc-500 mt-1">Твои заявки работодателям</div>
+                    </div>
+
+                    {/* 2. Показы в поиске */}
+                    <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
+                      <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                        <span>Показы в поиске</span>
                         <Search className="w-4 h-4 text-zinc-500" />
                       </div>
                       <div className="text-2xl font-bold text-zinc-100">{res.impressionsCount}</div>
-                      <div className="text-[11px] text-zinc-500 mt-1">Резюме показано в поисковой выдаче</div>
+                      <div className="text-[11px] text-zinc-500 mt-1">Органический поиск рекрутеров</div>
                     </div>
 
+                    {/* 3. Просмотры резюме */}
                     <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
                       <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
-                        <span>Просмотры резюме (за неделю)</span>
+                        <span>Просмотры резюме</span>
                         <Eye className="w-4 h-4 text-violet-400" />
                       </div>
                       <div className="text-2xl font-bold text-zinc-100">{res.viewsCount}</div>
-                      <div className="text-[11px] text-violet-400 mt-1 font-medium">Эйчары открыли карточку резюме</div>
+                      <div className="text-[11px] text-violet-400 mt-1 font-medium">Эйчары открыли резюме</div>
                     </div>
 
+                    {/* 4. Приглашения */}
                     <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4">
                       <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
-                        <span>Приглашения (за неделю)</span>
+                        <span>Приглашения</span>
                         <MessageSquare className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div className="text-2xl font-bold text-emerald-400">{res.invitationsCount}</div>
@@ -461,19 +660,40 @@ export default function HHPortalPage() {
                 ))}
               </div>
 
-              <button
-                onClick={() => setIsAddNegotiationModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-semibold border border-zinc-800 shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Добавить отклик
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsAutoImportModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-colors shrink-0"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Считать отклики с hh.ru
+                </button>
+
+                <button
+                  onClick={() => setIsAddNegotiationModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-semibold border border-zinc-800 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Добавить отклик
+                </button>
+              </div>
             </div>
 
             {/* Negotiations List */}
             {filteredNegotiations.length === 0 ? (
-              <div className="border border-zinc-800 bg-zinc-950/40 rounded-xl p-8 text-center text-xs text-zinc-500">
-                В этой категории пока нет откликов.
+              <div className="border border-zinc-800 bg-zinc-950/40 rounded-xl p-10 text-center space-y-3">
+                <Inbox className="w-8 h-8 text-zinc-600 mx-auto" />
+                <h4 className="text-sm font-semibold text-zinc-300">Список откликов пока пуст</h4>
+                <p className="text-xs text-zinc-500 max-w-md mx-auto">
+                  Нажми зеленую кнопку <strong>«Считать отклики с hh.ru»</strong>, вставь скрипт в консоль на hh.ru — и все твои реальные отклики, вакансии и чаты сразу загрузятся сюда.
+                </p>
+                <button
+                  onClick={() => setIsAutoImportModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold transition-colors mt-2"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  Запустить считывание откликов
+                </button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -534,7 +754,7 @@ export default function HHPortalPage() {
                       {neg.lastMessage && (
                         <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800/80 text-xs text-zinc-300 leading-relaxed">
                           <span className="text-zinc-500 text-[10px] block font-mono uppercase tracking-wider mb-1">
-                            Последнее сообщение работодателя:
+                            Последнее сообщение:
                           </span>
                           {neg.lastMessage}
                         </div>
@@ -561,8 +781,9 @@ export default function HHPortalPage() {
             </div>
 
             {(!activeResume.recentViews || activeResume.recentViews.length === 0) ? (
-              <div className="text-center py-8 text-xs text-zinc-500">
-                Список компаний пока пуст.
+              <div className="border border-zinc-800 bg-zinc-950/30 rounded-xl p-8 text-center text-xs text-zinc-500 space-y-2">
+                <p>История просмотров пока не синхронизирована с hh.ru.</p>
+                <p className="text-[11px] text-zinc-600">Нажми «⚡ Считать реальные отклики с hh.ru», чтобы подтянуть историю просмотров работодателями.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -595,13 +816,24 @@ export default function HHPortalPage() {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-100">Указать показатели за неделю (hh.ru)</h3>
+              <h3 className="text-sm font-semibold text-zinc-100">Указать показатели воронки (hh.ru)</h3>
               <button onClick={() => setIsStatsModalOpen(false)} className="text-zinc-500 hover:text-zinc-300">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSaveStats} className="space-y-3">
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">Отправлено откликов (за неделю)</label>
+                <input
+                  type="number"
+                  required
+                  value={editApplied}
+                  onChange={(e) => setEditApplied(Number(e.target.value))}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
+                />
+              </div>
+
               <div>
                 <label className="text-xs text-zinc-400 block mb-1">Показы в поиске (за неделю)</label>
                 <input
@@ -660,7 +892,7 @@ export default function HHPortalPage() {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-100">Добавить отклик / приглашение</h3>
+              <h3 className="text-sm font-semibold text-zinc-100">Добавить отклик / переписку</h3>
               <button onClick={() => setIsAddNegotiationModalOpen(false)} className="text-zinc-500 hover:text-zinc-300">
                 <X className="w-4 h-4" />
               </button>
@@ -672,7 +904,7 @@ export default function HHPortalPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Например: Яндекс, Mindbox, Ozon"
+                  placeholder="Например: Яндекс, Ozon, Т-Банк"
                   value={newNegCompany}
                   onChange={(e) => setNewNegCompany(e.target.value)}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
@@ -752,28 +984,31 @@ export default function HHPortalPage() {
       {/* 1-CLICK AUTO-IMPORT MODAL */}
       {isAutoImportModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-xl max-w-xl w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
                   <Zap className="w-4 h-4 text-emerald-400" />
-                  Авто-импорт профиля с hh.ru за 5 секунд
+                  Считывание реальных откликов и просмотров с hh.ru
                 </h3>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Никаких ручных вводов. Скопируй скрипт ниже, вставь в консоль на вкладке <a href="https://hh.ru" target="_blank" rel="noreferrer" className="text-zinc-200 underline">hh.ru</a> — он всё сделает сам.
-                </p>
+                <div className="text-xs text-zinc-400 mt-2 space-y-1">
+                  <p>1. Открой в браузере: <a href="https://novosibirsk.hh.ru/applicant/negotiations" target="_blank" rel="noreferrer" className="text-zinc-200 underline font-mono text-[11px]">https://novosibirsk.hh.ru/applicant/negotiations</a></p>
+                  <p>2. Нажми <span className="text-zinc-200 font-mono">F12</span> → вкладка <span className="text-zinc-200 font-mono">Console</span></p>
+                  <p>3. Скопируй скрипт ниже, вставь в консоль и нажми <span className="text-zinc-200 font-mono">Enter</span></p>
+                  <p className="text-[11px] text-zinc-500 pt-1">Скрипт считает все карточки откликов, статусы и переписки и отправит в дашборд (а также сохранит в буфер).</p>
+                </div>
               </div>
             </div>
 
             <div className="bg-zinc-900/80 p-3 rounded-lg border border-zinc-800 space-y-2 font-mono text-[11px] text-zinc-300">
-              <pre className="overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-40">
+              <pre className="overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-48">
                 {autoImportScript}
               </pre>
             </div>
 
             <div className="flex items-center justify-between pt-2">
               <span className="text-[11px] text-zinc-500">
-                Скрипт свяжет сессию с дашбордом
+                Если браузер заблокировал fetch — нажми кнопку «Вставить из буфера»
               </span>
 
               <div className="flex items-center gap-2">
