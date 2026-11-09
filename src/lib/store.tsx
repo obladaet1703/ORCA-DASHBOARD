@@ -39,7 +39,15 @@ interface AppContextType {
   deleteAccount: (accountId: string) => void;
   bumpResume: (accountId: string, resumeId: string) => Promise<boolean>;
   addResumeToAccount: (accountId: string, resume: { title: string; status: 'published' | 'hidden' }) => void;
-  updateAccountStats: (accountId: string, stats: { appliedCount: number; viewsCount: number; impressionsCount: number; invitationsCount: number }) => void;
+  updateAccountStats: (accountId: string, stats: { 
+    appliedCount: number; 
+    interviewCount?: number; 
+    waitingCount?: number; 
+    discardCount?: number; 
+    viewsCount: number; 
+    impressionsCount: number; 
+    invitationsCount: number 
+  }) => void;
   syncFromBackend: () => Promise<boolean>;
   importFromJSON: (payload: any) => boolean;
 
@@ -84,6 +92,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             return {
               ...fallback,
               ...acc,
+              statsBreakdown: acc.statsBreakdown || fallback.statsBreakdown,
               negotiations: realNegotiations,
               resumes: accResumes.map((r: any, rIdx: number) => {
                 const fallbackResume = fallback.resumes[rIdx] || fallback.resumes[0];
@@ -91,9 +100,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   ...fallbackResume,
                   ...r,
                   id: idx === 0 ? '0f2efd1dff1094692c0039ed1f7a365a487370' : r.id,
+                  appliedCount: idx === 0 ? (r.appliedCount || fallbackResume.appliedCount || 101) : r.appliedCount,
+                  interviewCount: idx === 0 ? (r.interviewCount ?? 4) : r.interviewCount,
+                  waitingCount: idx === 0 ? (r.waitingCount ?? 73) : r.waitingCount,
+                  discardCount: idx === 0 ? (r.discardCount ?? 24) : r.discardCount,
                   impressionsCount: idx === 0 ? 43 : (r.impressionsCount || 0),
                   viewsCount: idx === 0 ? 21 : (r.viewsCount || 0),
-                  invitationsCount: idx === 0 ? 0 : (r.invitationsCount || 0),
+                  invitationsCount: idx === 0 ? (r.invitationsCount ?? 4) : (r.invitationsCount || 0),
                   recentViews: (r.recentViews || []).filter((v: any) => v.company !== 'Mindbox' && v.company !== 'Ozon FinTech'),
                 };
               }),
@@ -199,16 +212,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     saveAccounts(updated);
   };
 
-  const updateAccountStats = (accountId: string, stats: { appliedCount: number; viewsCount: number; impressionsCount: number; invitationsCount: number }) => {
+  const updateAccountStats = (accountId: string, stats: { 
+    appliedCount: number; 
+    interviewCount?: number; 
+    waitingCount?: number; 
+    discardCount?: number; 
+    viewsCount: number; 
+    impressionsCount: number; 
+    invitationsCount: number 
+  }) => {
     const updated = accounts.map((acc) => {
       if (acc.id === accountId) {
         return {
           ...acc,
+          statsBreakdown: {
+            all: stats.appliedCount,
+            interview: stats.interviewCount ?? 4,
+            waiting: stats.waitingCount ?? 73,
+            discard: stats.discardCount ?? 24,
+            invitation: stats.invitationsCount ?? 0,
+            deleted: acc.statsBreakdown?.deleted ?? 42,
+          },
           resumes: acc.resumes.map((r, idx) => {
             if (idx === 0) {
               return {
                 ...r,
                 appliedCount: stats.appliedCount,
+                interviewCount: stats.interviewCount ?? r.interviewCount,
+                waitingCount: stats.waitingCount ?? r.waitingCount,
+                discardCount: stats.discardCount ?? r.discardCount,
                 viewsCount: stats.viewsCount,
                 impressionsCount: stats.impressionsCount,
                 invitationsCount: stats.invitationsCount,

@@ -59,7 +59,7 @@ export interface HHNegotiation {
   vacancyUrl: string;
   company: string;
   salary?: string;
-  status: 'invitation' | 'discard' | 'response' | 'viewed';
+  status: 'interview' | 'invitation' | 'waiting' | 'discard' | 'deleted' | 'response' | 'viewed';
   statusLabel: string;
   updatedAt: string;
   hasUnreadMessages?: boolean;
@@ -73,6 +73,15 @@ export interface HHResumeView {
   positionSearched?: string;
 }
 
+export interface HHAccountStatsBreakdown {
+  all: number;
+  interview: number;
+  waiting: number;
+  discard: number;
+  invitation: number;
+  deleted: number;
+}
+
 export interface HHAccount {
   id: string;
   name: string;
@@ -83,6 +92,7 @@ export interface HHAccount {
   authMethod: 'cookie' | 'oauth_token';
   credentialsMasked: string;
   cookieRaw?: string;
+  statsBreakdown?: HHAccountStatsBreakdown;
   resumes: {
     id: string;
     title: string;
@@ -91,6 +101,9 @@ export interface HHAccount {
     nextBumpAvailableAt?: string;
     status: 'published' | 'hidden';
     appliedCount?: number;
+    interviewCount?: number;
+    waitingCount?: number;
+    discardCount?: number;
     viewsCount?: number;
     impressionsCount?: number;
     invitationsCount?: number;

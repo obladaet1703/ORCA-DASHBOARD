@@ -1,0 +1,40 @@
+{
+  "id": "hh-acc-1",
+  "name": "Аккаунт №1 (Основной • Frontend)",
+  "applicantName": "Вадим Анохин",
+  "accountEmail": "anohin.vadim.1703@yandex.com",
+  "phone": "+7 (929) 388-55-08",
+  "status": "connected",
+  "authMethod": "cookie",
+  "credentialsMasked": "hhtoken=***live (Сессия активна)",
+  "cookieRaw": "hhtoken=live",
+  "statsBreakdown": {
+    "all": 101,
+    "interview": 4,
+    "waiting": 73,
+    "discard": 24,
+    "invitation": 0,
+    "deleted": 42
+  },
+  "resumes": [
+    {
+      "id": "0f2efd1dff1094692c0039ed1f7a365a487370",
+      "url": "https://novosibirsk.hh.ru/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370",
+      "title": "Frontend-разработчик (React, JavaScript, TypeScript, Next.js)",
+      "status": "published",
+      "appliedCount": 101,
+      "interviewCount": 4,
+      "waitingCount": 73,
+      "discardCount": 24,
+      "viewsCount": 21,
+      "impressionsCount": 43,
+      "invitationsCount": 4,
+      "lastBumpedAt": "2026-11-09T17:50:00.000Z",
+      "nextBumpAvailableAt": "2026-11-09T21:56:00.000Z",
+      "recentViews": []
+    }
+  ],
+  "negotiations": [],
+  "autoBumpEnabled": true,
+  "lastCheckedAt": "2026-11-09T18:50:00.000Z"
+}

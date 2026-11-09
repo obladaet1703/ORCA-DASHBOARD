@@ -110,22 +110,33 @@ export const INITIAL_HH_ACCOUNTS: HHAccount[] = [
     status: 'connected',
     authMethod: 'cookie',
     credentialsMasked: 'hhtoken=***live (Сессия активна)',
+    statsBreakdown: {
+      all: 101,
+      interview: 4,
+      waiting: 73,
+      discard: 24,
+      invitation: 0,
+      deleted: 42
+    },
     resumes: [
       {
         id: '0f2efd1dff1094692c0039ed1f7a365a487370',
         url: 'https://novosibirsk.hh.ru/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370',
         title: 'Frontend-разработчик (React, JavaScript, TypeScript, Next.js)',
         status: 'published',
-        appliedCount: 0,
+        appliedCount: 101,
+        interviewCount: 4,
+        waitingCount: 73,
+        discardCount: 24,
         viewsCount: 21,
         impressionsCount: 43,
-        invitationsCount: 0,
-        lastBumpedAt: new Date(Date.now() - 1000 * 60 * 130).toISOString(),
-        nextBumpAvailableAt: new Date(Date.now() + 1000 * 60 * 110).toISOString(),
+        invitationsCount: 4,
+        lastBumpedAt: new Date(Date.now() - 1000 * (52 * 60 + 9)).toISOString(),
+        nextBumpAvailableAt: new Date(Date.now() + 1000 * (3 * 3600 + 7 * 60 + 51)).toISOString(),
         recentViews: [],
       }
     ],
-    negotiations: [], // Только реальные отклики из браузера!
+    negotiations: [], // Реальные отклики из браузера
     autoBumpEnabled: true,
     lastCheckedAt: new Date().toISOString(),
   },

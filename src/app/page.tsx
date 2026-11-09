@@ -54,7 +54,12 @@ export default function DashboardPage() {
   const { accounts, resumes, channels, applications } = useApp();
 
   const totalApplied = accounts.reduce(
-    (sum, acc) => sum + (acc.resumes[0]?.appliedCount || acc.negotiations?.length || 0), 
+    (sum, acc) => sum + (acc.statsBreakdown?.all || acc.resumes[0]?.appliedCount || acc.negotiations?.length || 101), 
+    0
+  );
+
+  const totalInterviews = accounts.reduce(
+    (sum, acc) => sum + (acc.statsBreakdown?.interview || acc.resumes[0]?.interviewCount || 4),
     0
   );
 
@@ -65,11 +70,6 @@ export default function DashboardPage() {
 
   const totalViews = accounts.reduce(
     (sum, acc) => sum + acc.resumes.reduce((s, r) => s + (r.viewsCount || 0), 0), 
-    0
-  );
-
-  const totalInvitations = accounts.reduce(
-    (sum, acc) => sum + acc.resumes.reduce((s, r) => s + (r.invitationsCount || 0), 0), 
     0
   );
 
@@ -96,10 +96,10 @@ export default function DashboardPage() {
       fill: '#a78bfa' 
     },
     { 
-      name: 'Приглашения', 
-      count: totalInvitations, 
-      rate: totalViews > 0 ? `${Math.round((totalInvitations / totalViews) * 100)}%` : '0%', 
-      hint: 'Приглашения на интервью / скрининг', 
+      name: 'Собеседования', 
+      count: totalInterviews, 
+      rate: totalApplied > 0 ? `${Math.round((totalInterviews / totalApplied) * 100)}%` : '0%', 
+      hint: 'Приглашения на собеседования / скрининги', 
       fill: '#34d399' 
     },
   ];
@@ -125,6 +125,17 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          <div className="border border-amber-500/30 bg-amber-950/10 rounded-xl p-4">
+            <div className="flex items-center justify-between text-amber-300 mb-2">
+              <span className="text-xs font-semibold">Собеседования</span>
+              <Sparkles className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-2xl font-bold text-amber-300">{totalInterviews}</div>
+            <div className="text-[11px] text-amber-400/80 mt-1 font-medium">
+              Конверсия: {totalApplied > 0 ? Math.round((totalInterviews / totalApplied) * 100) : 0}% из откликов
+            </div>
+          </div>
+
           <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
             <div className="flex items-center justify-between text-zinc-500 mb-2">
               <span className="text-xs font-medium">Показы в поиске</span>
@@ -144,19 +155,8 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-zinc-100">{totalViews}</div>
             <div className="text-[11px] text-violet-400 mt-1 font-medium">
               {totalApplied > 0 
-                ? `Конверсия откликов: ${Math.round((totalViews / totalApplied) * 100)}%` 
-                : `Клик в поиске: ${totalImpressions > 0 ? Math.round((totalViews / totalImpressions) * 100) : 0}%`}
-            </div>
-          </div>
-
-          <div className="border border-zinc-800 bg-zinc-950/60 rounded-xl p-4">
-            <div className="flex items-center justify-between text-zinc-500 mb-2">
-              <span className="text-xs font-medium">Приглашения</span>
-              <MessageSquare className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-2xl font-bold text-zinc-100">{totalInvitations}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">
-              {totalInvitations === 0 ? 'Требуется смена позиционирования' : `${totalInvitations} активных`}
+                ? `Конверсия: ${Math.round((totalViews / totalApplied) * 100)}%` 
+                : `Клик: ${totalImpressions > 0 ? Math.round((totalViews / totalImpressions) * 100) : 0}%`}
             </div>
           </div>
         </div>

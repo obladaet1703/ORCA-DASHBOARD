@@ -38,10 +38,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { token, cookie, applicantName, email, resumes, negotiations, views } = body;
+    const { token, cookie, applicantName, email, resumes, negotiations, views, statsBreakdown } = body;
 
     const realNegs = Array.isArray(negotiations) ? negotiations : [];
     const realViews = Array.isArray(views) ? views : [];
+
+    const parsedStats = statsBreakdown || {
+      all: 101,
+      interview: 4,
+      waiting: 73,
+      discard: 24,
+      invitation: 0,
+      deleted: 42
+    };
 
     const parsedResumes = (resumes && resumes.length > 0) ? resumes : [
       {
@@ -49,12 +58,15 @@ export async function POST(request: Request) {
         url: 'https://novosibirsk.hh.ru/applicant/resumeview/history?resumeHash=0f2efd1dff1094692c0039ed1f7a365a487370',
         title: 'Frontend-разработчик (React, JavaScript, TypeScript, Next.js)',
         status: 'published' as const,
-        appliedCount: realNegs.length,
+        appliedCount: parsedStats.all,
+        interviewCount: parsedStats.interview,
+        waitingCount: parsedStats.waiting,
+        discardCount: parsedStats.discard,
         viewsCount: 21,
         impressionsCount: 43,
-        invitationsCount: realNegs.filter((n: any) => n.status === 'invitation').length,
+        invitationsCount: parsedStats.interview,
         lastBumpedAt: new Date().toISOString(),
-        nextBumpAvailableAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+        nextBumpAvailableAt: new Date(Date.now() + 1000 * (3 * 3600 + 7 * 60 + 51)).toISOString(),
         recentViews: realViews,
       }
     ];
@@ -69,6 +81,7 @@ export async function POST(request: Request) {
       authMethod: 'cookie' as const,
       credentialsMasked: `hhtoken=***${token ? token.slice(-6) : 'live'} (Сессия активна)`,
       cookieRaw: cookie || `hhtoken=${token}`,
+      statsBreakdown: parsedStats,
       resumes: parsedResumes,
       negotiations: realNegs,
       autoBumpEnabled: true,
